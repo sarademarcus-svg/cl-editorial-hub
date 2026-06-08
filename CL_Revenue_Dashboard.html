@@ -686,6 +686,53 @@ tr:last-child td { border-bottom: none; }
 
 .renewal-alert.urgent { color: var(--red); }
 .renewal-alert.soon { color: var(--amber); }
+
+.nr-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.nr-card {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+.nr-label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.nr-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--black);
+  line-height: 1;
+}
+.nr-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: var(--font-body);
+}
+.nr-bar-wrap { margin-top: 10px; }
+.nr-bar-track {
+  height: 3px;
+  background: var(--cream);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.nr-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
 </style>
 </head>
 <body>
@@ -835,6 +882,44 @@ tr:last-child td { border-bottom: none; }
         </div>
       </div>
 
+
+      <div class="section-label">New Revenue Closed · Month by Month</div>
+      <div class="nr-grid">
+        <div class="nr-card">
+          <div class="nr-label">SYV Print — New This Month</div>
+          <div class="nr-value" id="nr-syv-print">—</div>
+          <div class="nr-sub" id="nr-syv-print-ytd">— YTD</div>
+        </div>
+        <div class="nr-card">
+          <div class="nr-label">SYV Digital — New This Month</div>
+          <div class="nr-value" id="nr-syv-digital">—</div>
+          <div class="nr-sub" id="nr-syv-digital-ytd">— YTD</div>
+        </div>
+        <div class="nr-card">
+          <div class="nr-label">SBC Print — New This Month</div>
+          <div class="nr-value" id="nr-sbc-print">—</div>
+          <div class="nr-sub" id="nr-sbc-print-ytd">— YTD</div>
+        </div>
+        <div class="nr-card">
+          <div class="nr-label">SBC Digital — New This Month</div>
+          <div class="nr-value" id="nr-sbc-digital">—</div>
+          <div class="nr-sub" id="nr-sbc-digital-ytd">— YTD</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="margin-bottom:28px;">
+        <div class="chart-header">
+          <span class="chart-title">New Revenue Closed — Monthly Velocity</span>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-swatch" style="background:#0A0A0A;"></span>SYV Print</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#5C4B3A;"></span>SBC Print</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#C4B8A8;border:1px solid #888;"></span>Digital</span>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="chartNewRevenue" role="img" aria-label="New revenue closed by month and channel">New revenue closed 2026.</canvas>
+        </div>
+      </div>
+
       <div class="bottom-grid">
         <div class="market-card">
           <div class="market-title syv">Santa Ynez Valley</div>
@@ -925,7 +1010,8 @@ tr:last-child td { border-bottom: none; }
       </div>
     </div>
 
-    <!-- RENEWALS PANEL -->
+    <!-- NEW REVENUE SECTION - injected into overview before renewals -->
+    <!-- end new revenue -->
     <div id="panel-renewals" class="panel">
       <div class="section-label">Renewal Pipeline · Accounts Expiring Within 120 Days</div>
       <div class="renewal-grid" id="renewal-grid">
@@ -940,14 +1026,14 @@ tr:last-child td { border-bottom: none; }
 const GOALS_DB = '24a36ccb-25a5-4a84-b512-5f5643849e4d';
 const PIPELINE_DB = '3752672f-c383-802b-892e-000bef6f7ecd';
 const ACCOUNTS_DB = 'b6530cdf-2f30-4333-9503-9be1be37d6ca';
-const PROXY = 'https://api.anthropic.com/v1/notion-proxy';
+const PROXY = 'https://notion-proxy.sara-demarcus.workers.dev';
 
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
 let token = '';
 let charts = {};
-let appData = { syv: [], sbc: [], pipeline: [], accounts: [] };
+let appData = { syv: [], sbc: [], pipeline: [], accounts: [], newRevenue: Array(12).fill({syvPrint:0,syvDigital:0,sbcPrint:0,sbcDigital:0}) };
 
 function fmt(n) {
   if (n === null || n === undefined) return '—';
@@ -981,7 +1067,7 @@ function trendArrow(curr, prev) {
 
 async function notionQuery(dbId, filter) {
   const body = { filter: filter || {}, page_size: 100 };
-  const resp = await fetch(`https://api.notion.com/v1/databases/${dbId}/query`, {
+  const resp = await fetch(`https://notion-proxy.sara-demarcus.workers.dev/v1/databases/${dbId}/query`, {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + token,
@@ -1074,7 +1160,22 @@ async function loadData() {
       }
     }
 
-    appData = { syv, sbc, pipeline, accounts };
+
+    const newRevenue = Array(12).fill(null).map(() => ({syvPrint:0,syvDigital:0,sbcPrint:0,sbcDigital:0}));
+    for (const page of goalsRes.results) {
+      const title = getProp(page, 'Month') || '';
+      const biz = getProp(page, 'Business') || '';
+      const idx = monthIndex(title);
+      if (idx < 0 || biz === 'Combined') continue;
+      const syvPrint = getProp(page, 'New Revenue - SYV Print ($)') || 0;
+      const syvDigital = getProp(page, 'New Revenue - SYV Digital ($)') || 0;
+      const sbcPrint = getProp(page, 'New Revenue - SBC Print ($)') || 0;
+      const sbcDigital = getProp(page, 'New Revenue - SBC Digital ($)') || 0;
+      if (biz === 'SYVCL') { newRevenue[idx].syvPrint = syvPrint; newRevenue[idx].syvDigital = syvDigital; }
+      if (biz === 'SBCCL') { newRevenue[idx].sbcPrint = sbcPrint; newRevenue[idx].sbcDigital = sbcDigital; }
+    }
+
+    appData = { syv, sbc, pipeline, accounts, newRevenue };
     renderDashboard();
     document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
   } catch(e) {
@@ -1223,6 +1324,41 @@ function renderDashboard() {
         </div>`;
     }
   }
+
+
+  // New Revenue section
+  const nrSYVPrintMo = appData.newRevenue[n-1]?.syvPrint || 0;
+  const nrSYVDigMo = appData.newRevenue[n-1]?.syvDigital || 0;
+  const nrSBCPrintMo = appData.newRevenue[n-1]?.sbcPrint || 0;
+  const nrSBCDigMo = appData.newRevenue[n-1]?.sbcDigital || 0;
+  const nrSYVPrintYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.syvPrint||0),0);
+  const nrSYVDigYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.syvDigital||0),0);
+  const nrSBCPrintYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.sbcPrint||0),0);
+  const nrSBCDigYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.sbcDigital||0),0);
+
+  document.getElementById('nr-syv-print').textContent = fmt(nrSYVPrintMo);
+  document.getElementById('nr-syv-print-ytd').textContent = fmt(nrSYVPrintYTD) + ' YTD';
+  document.getElementById('nr-syv-digital').textContent = fmt(nrSYVDigMo);
+  document.getElementById('nr-syv-digital-ytd').textContent = fmt(nrSYVDigYTD) + ' YTD';
+  document.getElementById('nr-sbc-print').textContent = fmt(nrSBCPrintMo);
+  document.getElementById('nr-sbc-print-ytd').textContent = fmt(nrSBCPrintYTD) + ' YTD';
+  document.getElementById('nr-sbc-digital').textContent = fmt(nrSBCDigMo);
+  document.getElementById('nr-sbc-digital-ytd').textContent = fmt(nrSBCDigYTD) + ' YTD';
+
+  if (charts.newRevenue) charts.newRevenue.destroy();
+  charts.newRevenue = new Chart(document.getElementById('chartNewRevenue'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'SYV Print', data: appData.newRevenue.map(m=>m?.syvPrint||0), backgroundColor: '#0A0A0A', borderRadius: 2, stack: 'syv' },
+        { label: 'SYV Digital', data: appData.newRevenue.map(m=>m?.syvDigital||0), backgroundColor: '#444', borderRadius: 2, stack: 'syv' },
+        { label: 'SBC Print', data: appData.newRevenue.map(m=>m?.sbcPrint||0), backgroundColor: '#5C4B3A', borderRadius: 2, stack: 'sbc' },
+        { label: 'SBC Digital', data: appData.newRevenue.map(m=>m?.sbcDigital||0), backgroundColor: '#C4B8A8', borderRadius: 2, stack: 'sbc' }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } }, scales: { x: { grid: gridOpts, ticks: tickOpts, stacked: true }, y: { grid: gridOpts, ticks: { ...tickOpts, callback: fmtTick }, beginAtZero: true, stacked: true } } }
+  });
 
   renderCharts(syv, sbc, n);
 }
