@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYV | SBC — Editorial Calendar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0A0A0A;
+  --cream: #E8E0D5;
+  --greige: #C4B8A8;
+  --warm: #F5F0EB;
+  --text: #1A1A1A;
+  --muted: #6B6560;
+  --col-deadline: #8B3A3A;
+  --col-event-syv: #4A6741;
+  --col-event-sbc: #3A5A7A;
+  --col-photo: #7A5A3A;
+  --col-feature: #6A3A7A;
+  --col-active: #B8860B;
+  --col-past: #C4B8A8;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-label: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+}
+
+body { background: var(--warm); font-family: var(--font-body); color: var(--text); min-height: 100vh; }
+
+/* ── HEADER ── */
+.header {
+  background: var(--black);
+  padding: 20px 36px 0;
+  position: sticky; top: 0; z-index: 100;
+}
+
+.header-top {
+  display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px;
+}
+
+.header-logo { display: flex; align-items: center; gap: 14px; }
+.header-logo svg { width: 32px; height: 32px; }
+.brand-main { font-family: var(--font-label); font-weight: 700; font-size: 16px; letter-spacing: 0.1em; color: white; line-height: 1; }
+.brand-sub { font-family: var(--font-label); font-weight: 300; font-size: 9px; letter-spacing: 0.2em; color: var(--greige); text-transform: uppercase; margin-top: 3px; }
+
+.header-center { text-align: center; }
+.header-title { font-family: var(--font-display); font-size: 13px; font-weight: 300; font-style: italic; color: var(--greige); }
+.header-rolling { font-family: var(--font-label); font-size: 11px; letter-spacing: 0.15em; color: #444; text-transform: uppercase; margin-top: 2px; }
+
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; justify-content: flex-end; }
+
+.hdr-btn {
+  font-family: var(--font-label); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--greige); background: none; border: 1px solid #333; border-radius: 3px;
+  padding: 6px 12px; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.hdr-btn:hover { border-color: var(--greige); color: white; }
+.hdr-btn.active-issue-btn { border-color: var(--col-active); color: var(--col-active); }
+
+/* Active issue selector */
+.active-issue-selector {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 36px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 12px;
+  z-index: 200;
+  min-width: 220px;
+}
+.active-issue-selector.open { display: block; }
+.ais-label { font-family: var(--font-label); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: #555; margin-bottom: 8px; }
+.ais-select { width: 100%; background: #0a0a0a; border: 1px solid #333; color: white; padding: 6px 8px; font-family: var(--font-label); font-size: 12px; border-radius: 3px; outline: none; }
+.ais-auto { font-family: var(--font-body); font-size: 11px; color: #555; margin-top: 8px; cursor: pointer; }
+.ais-auto:hover { color: var(--greige); }
+
+/* ── LEGEND ── */
+.legend {
+  display: flex; gap: 16px; padding: 10px 0 12px;
+  border-top: 1px solid #1a1a1a; flex-wrap: wrap;
+}
+.legend-item { display: flex; align-items: center; gap: 6px; font-family: var(--font-label); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #555; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── CALENDAR GRID ── */
+.calendar-wrap { padding: 28px; }
+.cal-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+/* ── MONTH CARD STATES ── */
+.month-card {
+  background: white; border: 0.5px solid var(--greige); border-radius: 6px;
+  overflow: hidden; cursor: pointer; transition: box-shadow 0.2s, transform 0.2s;
+  position: relative;
+}
+.month-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.1); transform: translateY(-1px); }
+
+/* PAST — faded, greyed */
+.month-card.past {
+  opacity: 0.45;
+  filter: grayscale(40%);
+}
+.month-card.past .month-header { background: #2a2a2a; }
+.month-card.past:hover { opacity: 0.65; filter: grayscale(20%); }
+
+/* CLOSED — between past and active, slightly faded */
+.month-card.closed {
+  opacity: 0.7;
+}
+.month-card.closed .month-header { background: #1f1f1f; }
+
+/* ACTIVE — gold treatment, prominent */
+.month-card.active-issue {
+  border-color: var(--col-active);
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(184,134,11,0.12), 0 4px 24px rgba(184,134,11,0.15);
+}
+.month-card.active-issue .month-header { background: #1a1400; border-bottom: 1px solid rgba(184,134,11,0.3); }
+
+/* PLANNING — upcoming issues */
+.month-card.planning .month-header { background: var(--black); }
+
+.month-header { padding: 12px 14px 10px; position: relative; }
+
+.state-badge {
+  position: absolute; top: 8px; right: 10px;
+  font-family: var(--font-label); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  border-radius: 2px; padding: 2px 6px;
+}
+.badge-past { color: #555; background: rgba(255,255,255,0.05); border: 1px solid #333; }
+.badge-closed { color: #888; background: rgba(255,255,255,0.05); border: 1px solid #444; }
+.badge-active { color: var(--col-active); background: rgba(184,134,11,0.12); border: 1px solid var(--col-active); }
+.badge-next { color: #7AB8A8; background: rgba(122,184,168,0.1); border: 1px solid rgba(122,184,168,0.3); }
+
+.month-name { font-family: var(--font-label); font-weight: 700; font-size: 14px; letter-spacing: 0.1em; text-transform: uppercase; color: white; line-height: 1; }
+.month-year { font-family: var(--font-label); font-weight: 300; font-size: 10px; letter-spacing: 0.15em; color: #666; margin-top: 2px; }
+.month-theme { font-family: var(--font-display); font-size: 13px; font-weight: 300; font-style: italic; color: var(--greige); margin-top: 6px; line-height: 1.2; }
+.month-card.active-issue .month-theme { color: var(--col-active); }
+
+.month-body { padding: 10px 12px 12px; }
+
+.event-list { display: flex; flex-direction: column; gap: 3px; }
+.event-item { display: flex; align-items: flex-start; gap: 7px; padding: 3px 0; border-bottom: 0.5px solid rgba(196,184,168,0.25); }
+.event-item:last-child { border-bottom: none; }
+.event-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+.event-content { flex: 1; min-width: 0; }
+.event-date { font-family: var(--font-label); font-size: 9px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; }
+.event-title { font-family: var(--font-body); font-size: 11px; color: var(--text); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.more-events { font-family: var(--font-label); font-size: 9px; letter-spacing: 0.1em; color: var(--muted); text-transform: uppercase; margin-top: 5px; }
+
+/* Active issue progress bar */
+.active-progress {
+  padding: 0 12px 10px;
+}
+.progress-label {
+  display: flex; justify-content: space-between;
+  font-family: var(--font-label); font-size: 9px; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 4px;
+}
+.progress-track { height: 2px; background: rgba(184,134,11,0.2); border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--col-active); border-radius: 2px; transition: width 0.6s ease; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(10,10,10,0.75); z-index: 200;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: white; border-radius: 8px; width: 100%; max-width: 700px;
+  max-height: 88vh; overflow-y: auto;
+  transform: translateY(20px); transition: transform 0.2s;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+
+.modal-header { padding: 20px 24px 18px; position: sticky; top: 0; }
+.modal-header.past-header { background: #222; }
+.modal-header.closed-header { background: #1a1a1a; }
+.modal-header.active-header { background: #1a1400; border-bottom: 1px solid rgba(184,134,11,0.3); }
+.modal-header.planning-header { background: var(--black); }
+
+.modal-header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.modal-month { font-family: var(--font-label); font-weight: 700; font-size: 20px; letter-spacing: 0.08em; text-transform: uppercase; color: white; }
+.modal-theme { font-family: var(--font-display); font-size: 16px; font-weight: 300; font-style: italic; color: var(--greige); margin-top: 4px; }
+.modal-header.active-header .modal-theme { color: var(--col-active); }
+.modal-state-label { font-family: var(--font-label); font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 8px; }
+.modal-close { background: none; border: none; color: #666; font-size: 20px; cursor: pointer; padding: 0 4px; line-height: 1; transition: color 0.2s; }
+.modal-close:hover { color: white; }
+
+.modal-body { padding: 20px 24px; }
+.modal-section { margin-bottom: 22px; }
+.modal-section-label { font-family: var(--font-label); font-size: 9px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 6px; border-bottom: 0.5px solid var(--greige); }
+
+.modal-event { display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid rgba(196,184,168,0.25); }
+.modal-event:last-child { border-bottom: none; }
+.modal-event-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.modal-event-content { flex: 1; }
+.modal-event-date { font-family: var(--font-label); font-size: 10px; font-weight: 600; letter-spacing: 0.08em; color: var(--muted); text-transform: uppercase; margin-bottom: 2px; }
+.modal-event-title { font-family: var(--font-body); font-size: 13px; color: var(--text); line-height: 1.4; }
+.modal-event-detail { font-family: var(--font-body); font-size: 11px; color: var(--muted); margin-top: 2px; line-height: 1.4; }
+
+.deadline-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.deadline-item { background: var(--warm); border: 0.5px solid var(--greige); border-left: 3px solid var(--col-deadline); border-radius: 3px; padding: 8px 10px; }
+.deadline-date { font-family: var(--font-label); font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: var(--col-deadline); }
+.deadline-name { font-family: var(--font-body); font-size: 11px; color: var(--text); margin-top: 2px; line-height: 1.3; }
+
+/* Active issue planning checklist */
+.checklist { display: flex; flex-direction: column; gap: 6px; }
+.checklist-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--warm); border: 0.5px solid var(--greige); border-radius: 4px; cursor: pointer; transition: background 0.15s; }
+.checklist-item:hover { background: var(--cream); }
+.checklist-item.done { opacity: 0.5; }
+.checklist-item.done .ci-title { text-decoration: line-through; }
+.ci-check { width: 16px; height: 16px; border: 1.5px solid var(--greige); border-radius: 3px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.checklist-item.done .ci-check { background: var(--black); border-color: var(--black); }
+.ci-title { font-family: var(--font-body); font-size: 12px; color: var(--text); flex: 1; }
+.ci-week { font-family: var(--font-label); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+
+/* Add form */
+.add-event-btn { width: 100%; margin-top: 16px; padding: 10px; background: var(--black); color: white; border: none; border-radius: 4px; font-family: var(--font-label); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; }
+.add-event-btn:hover { background: #333; }
+.add-form { background: var(--warm); border: 0.5px solid var(--greige); border-radius: 6px; padding: 16px; margin-top: 12px; display: none; }
+.add-form.open { display: block; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.form-row.single { grid-template-columns: 1fr; }
+.form-label { font-family: var(--font-label); font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; display: block; }
+.form-input, .form-select { width: 100%; padding: 8px 10px; background: white; border: 0.5px solid var(--greige); border-radius: 3px; font-family: var(--font-body); font-size: 12px; color: var(--text); outline: none; }
+.form-input:focus, .form-select:focus { border-color: var(--black); }
+.form-btns { display: flex; gap: 8px; margin-top: 10px; }
+.form-save { flex: 1; padding: 8px; background: var(--black); color: white; border: none; border-radius: 3px; font-family: var(--font-label); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; }
+.form-cancel { padding: 8px 16px; background: none; border: 0.5px solid var(--greige); border-radius: 3px; font-family: var(--font-label); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; color: var(--muted); }
+
+.delete-btn { font-size: 11px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 2px; }
+.delete-btn:hover { color: var(--col-deadline); }
+</style>
+</head>
+<body>
+
+<header class="header" style="position:relative;">
+  <div class="header-top">
+    <div class="header-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" stroke="white" stroke-width="4"/>
+        <path d="M50 18 C32 18 18 32 18 50 C18 68 32 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <line x1="50" y1="22" x2="50" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M50 18 C68 18 82 32 82 50 C82 68 68 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="brand-main">SYV | SBC CITY LIFESTYLE</div>
+        <div class="brand-sub">Editorial Planning Calendar</div>
+      </div>
+    </div>
+    <div class="header-center">
+      <div class="header-title">Rolling 12-Month View</div>
+      <div class="header-rolling" id="rolling-label">—</div>
+    </div>
+    <div class="header-right">
+      <button class="hdr-btn" onclick="scrollToActive()">★ Active Issue</button>
+      <button class="hdr-btn active-issue-btn" onclick="toggleAIS()" id="ais-toggle-btn">⚙ Active Issue: —</button>
+    </div>
+  </div>
+
+  <!-- Active Issue Selector Dropdown -->
+  <div class="active-issue-selector" id="ais-dropdown">
+    <div class="ais-label">Set Active Issue</div>
+    <select class="ais-select" id="ais-select" onchange="setActiveIssue(this.value)">
+      <option value="auto">Auto-calculate</option>
+    </select>
+    <div class="ais-auto" onclick="setActiveIssue('auto')">↺ Reset to auto-calculate</div>
+  </div>
+
+  <div class="legend">
+    <span class="legend-item"><span class="legend-dot" style="background:#555; opacity:0.5;"></span>Past / Closed</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--col-active);"></span>Active Issue</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--col-deadline);"></span>CL Deadline</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--col-event-syv);"></span>SYV Event</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--col-event-sbc);"></span>SBC Event</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--col-photo);"></span>Photoshoot</span>
+    <span class="legend-item"><span class="legend-dot" style="background:var(--col-feature);"></span>Advertiser Feature</span>
+  </div>
+</header>
+
+<div class="calendar-wrap">
+  <div class="cal-grid" id="cal-grid"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header" id="modal-header">
+      <div class="modal-header-top">
+        <div>
+          <div class="modal-month" id="modal-month-title"></div>
+          <div class="modal-theme" id="modal-theme-title"></div>
+          <div class="modal-state-label" id="modal-state-label"></div>
+        </div>
+        <button class="modal-close" onclick="closeModalDirect()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<script>
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTH_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+const THEMES = {
+  0:'Health & Wellness', 1:'Love Local', 2:'Home & Design',
+  3:'Investment', 4:'The Ladies Issue', 5:'The Gentlemen\'s Issue',
+  6:'Explore', 7:'Kids & Pets', 8:'Style',
+  9:'Food & Drink', 10:'Thankful', 11:'Holidays & Giving'
+};
+
+// Production deadlines for a given issue month
+function getDeadlines(year, month) {
+  const mo = month % 12;
+  const nextMo = (month + 1) % 12;
+  const nextYr = month >= 11 ? year + 1 : year;
+  return [
+    { date: `${MONTH_SHORT[mo]} 15 & 20`, title: 'Deadline Reminders', detail: 'ARC sends automated reminder emails about ads/creative deadlines' },
+    { date: `${MONTH_SHORT[mo]} 22`, title: 'Editorial Deadline', detail: 'All local content due in Arc by 10:00 AM CT' },
+    { date: `${MONTH_SHORT[mo]} 25`, title: 'Ad Insertion / Creation', detail: 'New contracts, ad changes, creation requests due by 11:59 PM CT' },
+    { date: `${MONTH_SHORT[mo]} 25`, title: 'Distribution Deadline', detail: 'Pub copy quantities, business lists, signed clients due 11:59 PM CT' },
+    { date: `${MONTH_SHORT[mo]} 26`, title: 'Pagination Process', detail: 'Layout team builds the magazine blueprint' },
+    { date: `${MONTH_SHORT[nextMo]} 1`, title: 'Final Ad Deadline', detail: 'All ads approved in Arc by 10:00 AM CT' },
+    { date: `${MONTH_SHORT[nextMo]} 3`, title: 'Payment Processing', detail: 'Payment pulled up to 3 times until Collections Deadline' },
+    { date: `${MONTH_SHORT[nextMo]} 24`, title: 'Collections Deadline', detail: 'Credit card payments due by 11:59 PM CT' },
+  ];
+}
+
+// Active issue production checklist
+const PRODUCTION_CHECKLIST = [
+  { week: '6 Weeks Out', title: 'Attend National Content Call (2nd Tuesday)', key: 'natl_call' },
+  { week: '6 Weeks Out', title: 'Email writers — share themes & request pitches', key: 'email_writers' },
+  { week: '5 Weeks Out', title: 'Select layouts & assign content in ARC', key: 'assign_arc' },
+  { week: '5 Weeks Out', title: 'Send assignments to photographers & writers', key: 'send_assignments' },
+  { week: '4 Weeks Out', title: 'Start Business Monthly & City Scene anchor content', key: 'anchor_content' },
+  { week: '4 Weeks Out', title: 'Begin Calendar of Events', key: 'cal_events' },
+  { week: '4 Weeks Out', title: 'Conduct interviews for articles you\'re writing', key: 'interviews' },
+  { week: '3 Weeks Out', title: 'Collect writing & photography from team', key: 'collect_content' },
+  { week: '3 Weeks Out', title: 'Upload materials to ARC & check photo quality', key: 'upload_arc' },
+  { week: '2 Weeks Out', title: 'Confirm Business Monthly, City Scene, Events with publisher', key: 'confirm_biz' },
+  { week: '2 Weeks Out', title: 'Send reminders to partners for content due', key: 'partner_reminders' },
+  { week: '2 Weeks Out', title: 'Verify all horizontal & vertical photos received', key: 'verify_photos' },
+  { week: '1 Week Out', title: 'Upload all content & photos to ARC', key: 'final_upload' },
+  { week: '1 Week Out', title: 'Copyedit & finalize — add hyperlinks, captions, pulled quotes', key: 'copyedit' },
+  { week: 'Deadline', title: 'Table of Contents, Cover, Masthead, Lifestyle Letter', key: 'toc_cover' },
+  { week: 'Deadline', title: 'Confirm final ad sales with publisher', key: 'confirm_ads' },
+];
+
+// SYV Community Events
+const SYV_EVENTS = [
+  { month:4, date:'May 2', title:'Buellton Brew Fest', detail:'River View Park, 11:30 AM - 4:30 PM' },
+  { month:4, date:'May 2', title:'Rancheros Visitadores Parade', detail:'Downtown Solvang, 2:30 PM' },
+  { month:4, date:'May 6', title:'Women Winemakers Takeover', detail:'Mattei\'s Tavern, 5:00-7:00 PM' },
+  { month:4, date:'May 8', title:'P!NK Acoustic Evening', detail:'Solvang Festival Theater, 7:00 PM' },
+  { month:4, date:'May 10', title:'Mother\'s Day Jazz', detail:'Koehler Winery' },
+  { month:5, date:'Jun 1-30', title:'Solvang Pride Month', detail:'City-wide decor and community specials' },
+  { month:5, date:'Jun 11', title:'Come From Away Opening', detail:'Solvang Festival Theater, 7:30 PM' },
+  { month:5, date:'Jun 13', title:'SYV Pride Parade & Festival', detail:'Parade 11AM · Festival 12-4PM @ Solvang Park' },
+  { month:5, date:'Jun 14', title:'Music in the Garden: Petty Party', detail:'Solvang Theaterfest Garden, 3-5 PM' },
+  { month:5, date:'Jun 20', title:'Old Santa Ynez Days Parade', detail:'10:00 AM @ Santa Ynez' },
+  { month:5, date:'Jun 20-21', title:'Old Santa Ynez Days Rodeo', detail:'PRCA Rodeo @ Chumash San Carlos Property' },
+  { month:5, date:'Jun 28', title:'Music in the Garden: Stephen Styles', detail:'Solvang Theaterfest, 3-5 PM' },
+  { month:6, date:'Jul 4', title:'4th of July Parade', detail:'10:00 AM @ Downtown Solvang' },
+  { month:6, date:'Jul 4', title:'Festival & Fireworks', detail:'Old Mission Santa Ines · Fireworks 9 PM' },
+  { month:6, date:'Jul 5', title:'Disney\'s Frozen Opening', detail:'Solvang Festival Theater (PCPA)' },
+  { month:6, date:'Jul 19', title:'Music in the Garden: Amanda Castro', detail:'Solvang Theaterfest, 3-5 PM · Vintage Jazz' },
+  { month:6, date:'Jul 24', title:'Tales from the Tavern: Paul Thorn', detail:'Santa Ynez, 7:30 PM · Roots/Americana' },
+  { month:6, date:'Jul 26', title:'Music in the Garden: Dave Stamey', detail:'Solvang Theaterfest, 3-5 PM' },
+  { month:7, date:'Aug 7', title:'Beehive: The 60s Musical', detail:'Solvang Festival Theater, 8:00 PM' },
+  { month:7, date:'Aug 16', title:'Music in the Garden: The Tapestry', detail:'Solvang Theaterfest, 3-5 PM' },
+  { month:7, date:'Aug 22-23', title:'SYV Music Festival', detail:'Outdoor multi-genre festival in Solvang' },
+  { month:7, date:'Aug 28', title:'Tales from the Tavern', detail:'Santa Ynez, 7:00 PM · Folk & Stories' },
+  { month:8, date:'Sep 4-7', title:'Labor Day Weekend', detail:'Live music & BBQ at Hook\'d Lake Cachuma' },
+  { month:8, date:'Sep 11-13', title:'Danish Days Pre-Party', detail:'Pop-up Beer Gardens in Downtown Solvang' },
+  { month:8, date:'Sep 18-20', title:'89th Annual Danish Days', detail:'Parades · Aebleskiver · Viking Encampment' },
+  { month:8, date:'Sep 24-27', title:'Taste of the SYV', detail:'4-Day Food & Wine Festival' },
+  { month:9, date:'Oct 1-31', title:'Solvang Scarecrow Fest', detail:'Scarecrows displayed city-wide' },
+  { month:9, date:'Oct 10-11', title:'Celebration of Harvest', detail:'Grand Tasting @ Wineries' },
+  { month:9, date:'Oct 17', title:'SYV Polo Classic', detail:'11:00 AM @ Piocho Ranch (Santa Ynez)' },
+  { month:9, date:'Oct 30-31', title:'Halloween in Solvang', detail:'Haunted House & Copenhagen Dr Trick-or-Treat' },
+  { month:10, date:'Nov 7', title:'Los Olivos Day in the Country', detail:'Parade & Street Fair @ Los Olivos' },
+  { month:11, date:'Dec 4', title:'Julefest Tree Lighting', detail:'5:00 PM @ Solvang Park' },
+  { month:11, date:'Dec 5', title:'Julefest Parade', detail:'11:00 AM @ Downtown Solvang' },
+  { month:11, date:'Dec 12', title:'Skål Stroll Wine Walk', detail:'Wine/Beer tasting through holiday lights' },
+  { month:11, date:'Dec 19', title:'Julefest Nativity Pageant', detail:'Solvang Festival Theater Performance' },
+];
+
+// ── STATE ──
+const today = new Date();
+const todayYear = today.getFullYear();
+const todayMonth = today.getMonth();
+const todayDay = today.getDate();
+
+let activeIssueOverride = localStorage.getItem('cl_active_issue') || 'auto';
+let customEvents = JSON.parse(localStorage.getItem('cl_custom_events') || '[]');
+let checklistState = JSON.parse(localStorage.getItem('cl_checklist') || '{}');
+let activeModal = null;
+
+function getAutoActiveIssue() {
+  // If before 22nd → active issue = currentMonth + 2
+  // If on/after 22nd → active issue = currentMonth + 3
+  const offset = todayDay < 22 ? 2 : 3;
+  const d = new Date(todayYear, todayMonth + offset, 1);
+  return { year: d.getFullYear(), month: d.getMonth() };
+}
+
+function getActiveIssue() {
+  if (activeIssueOverride === 'auto') return getAutoActiveIssue();
+  const [y, m] = activeIssueOverride.split('-').map(Number);
+  return { year: y, month: m };
+}
+
+function getMonthState(year, month) {
+  const ai = getActiveIssue();
+  const isActive = (year === ai.year && month === ai.month);
+  // Past: deadline (22nd) has passed — so month/year is before today's planning horizon
+  // A month is "past" if its 25th has already passed
+  const deadline25 = new Date(year, month, 25);
+  const isPast = deadline25 < today && !isActive;
+  // Closed: between past and active — deadline not passed but before active
+  const monthNum = year * 12 + month;
+  const activeNum = ai.year * 12 + ai.month;
+  const todayNum = todayYear * 12 + todayMonth;
+  const isClosed = !isPast && !isActive && monthNum < activeNum;
+  const isNext = !isPast && !isClosed && !isActive && monthNum === activeNum + 1;
+  return { isPast, isClosed, isActive, isNext };
+}
+
+function typeColor(type) {
+  const m = { deadline:'var(--col-deadline)', 'syv-event':'var(--col-event-syv)', 'sbc-event':'var(--col-event-sbc)', photo:'var(--col-photo)', feature:'var(--col-feature)' };
+  return m[type] || 'var(--muted)';
+}
+
+// ── ACTIVE ISSUE PROGRESS ──
+function getActiveProgress() {
+  const ai = getActiveIssue();
+  // 6 weeks before 22nd of active issue month
+  const deadline = new Date(ai.year, ai.month, 22);
+  const sixWeeksOut = new Date(deadline);
+  sixWeeksOut.setDate(sixWeeksOut.getDate() - 42);
+  const total = deadline - sixWeeksOut;
+  const elapsed = today - sixWeeksOut;
+  return Math.max(0, Math.min(100, Math.round(elapsed / total * 100)));
+}
+
+// ── POPULATE AIS DROPDOWN ──
+function populateAISDropdown() {
+  const sel = document.getElementById('ais-select');
+  sel.innerHTML = '<option value="auto">Auto-calculate</option>';
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(todayYear, todayMonth + i, 1);
+    const val = `${d.getFullYear()}-${d.getMonth()}`;
+    const label = `${MONTH_NAMES[d.getMonth()]} ${d.getFullYear()}`;
+    const opt = document.createElement('option');
+    opt.value = val;
+    opt.textContent = label;
+    if (activeIssueOverride === val) opt.selected = true;
+    sel.appendChild(opt);
+  }
+  if (activeIssueOverride === 'auto') sel.value = 'auto';
+}
+
+function toggleAIS() {
+  document.getElementById('ais-dropdown').classList.toggle('open');
+}
+
+function setActiveIssue(val) {
+  activeIssueOverride = val;
+  localStorage.setItem('cl_active_issue', val);
+  document.getElementById('ais-dropdown').classList.remove('open');
+  updateAISBtn();
+  renderCalendar();
+}
+
+function updateAISBtn() {
+  const ai = getActiveIssue();
+  document.getElementById('ais-toggle-btn').textContent = `⚙ Active: ${MONTH_NAMES[ai.month]} ${ai.year}`;
+}
+
+// ── RENDER CALENDAR ──
+function renderCalendar() {
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = '';
+
+  document.getElementById('rolling-label').textContent =
+    `${MONTH_SHORT[todayMonth]} ${todayYear} — ${MONTH_SHORT[(todayMonth+11)%12]} ${(todayMonth+11 >= 12) ? todayYear+1 : todayYear}`;
+
+  updateAISBtn();
+  populateAISDropdown();
+
+  const ai = getActiveIssue();
+  const progress = getActiveProgress();
+
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(todayYear, todayMonth + i, 1);
+    const yr = d.getFullYear();
+    const mo = d.getMonth();
+    const { isPast, isClosed, isActive, isNext } = getMonthState(yr, mo);
+
+    const syv = SYV_EVENTS.filter(e => e.month === mo);
+    const custom = customEvents.filter(e => e.key === `${yr}-${mo}`);
+
+    // Card state class
+    let stateClass = 'planning';
+    if (isPast) stateClass = 'past';
+    else if (isClosed) stateClass = 'closed';
+    else if (isActive) stateClass = 'active-issue';
+
+    // Badge
+    let badge = '';
+    if (isPast) badge = '<span class="state-badge badge-past">Closed</span>';
+    else if (isClosed) badge = '<span class="state-badge badge-closed">In Production</span>';
+    else if (isActive) badge = '<span class="state-badge badge-active">● Active Issue</span>';
+    else if (isNext) badge = '<span class="state-badge badge-next">Up Next</span>';
+
+    // Preview events
+    let previewEvents = [];
+    if (!isPast) {
+      syv.slice(0,2).forEach(e => previewEvents.push({ ...e, type:'syv-event' }));
+      custom.slice(0,1).forEach(e => previewEvents.push({ ...e, type:e.type }));
+    }
+    previewEvents.push({ date:`${MONTH_SHORT[mo]} 22`, title:'Editorial Deadline', type:'deadline' });
+    previewEvents.push({ date:`${MONTH_SHORT[mo]} 25`, title:'Ad Insertion Deadline', type:'deadline' });
+
+    const totalExtra = syv.length + custom.length - (isPast ? 0 : 2);
+
+    const card = document.createElement('div');
+    card.className = `month-card ${stateClass}`;
+    if (isActive) card.id = 'active-issue-card';
+    card.onclick = () => openModal(yr, mo);
+
+    card.innerHTML = `
+      <div class="month-header">
+        ${badge}
+        <div class="month-name">${MONTH_NAMES[mo]}</div>
+        <div class="month-year">${yr}</div>
+        <div class="month-theme">${THEMES[mo]}</div>
+      </div>
+      ${isActive ? `
+        <div class="active-progress">
+          <div class="progress-label"><span>Production Progress</span><span>${progress}%</span></div>
+          <div class="progress-track"><div class="progress-fill" style="width:${progress}%"></div></div>
+        </div>
+      ` : ''}
+      <div class="month-body">
+        <div class="event-list">
+          ${previewEvents.slice(0,4).map(e => `
+            <div class="event-item">
+              <div class="event-dot" style="background:${typeColor(e.type)};${isPast?'opacity:0.4;':''}"></div>
+              <div class="event-content">
+                <div class="event-date">${e.date||''}</div>
+                <div class="event-title">${e.title}</div>
+              </div>
+            </div>
+          `).join('')}
+          ${totalExtra > 0 ? `<div class="more-events">+ ${totalExtra} more — click to expand</div>` : ''}
+        </div>
+      </div>
+    `;
+
+    grid.appendChild(card);
+  }
+}
+
+// ── MODAL ──
+function openModal(year, month) {
+  activeModal = { year, month };
+  const { isPast, isClosed, isActive } = getMonthState(year, month);
+  const syv = SYV_EVENTS.filter(e => e.month === month);
+  const custom = customEvents.filter(e => e.key === `${year}-${month}`);
+  const deadlines = getDeadlines(year, month);
+  const ckKey = `${year}-${month}`;
+
+  const header = document.getElementById('modal-header');
+  header.className = 'modal-header ' + (isPast ? 'past-header' : isClosed ? 'closed-header' : isActive ? 'active-header' : 'planning-header');
+
+  document.getElementById('modal-month-title').textContent = `${MONTH_NAMES[month]} ${year}`;
+  document.getElementById('modal-theme-title').textContent = THEMES[month];
+
+  let stateText = '';
+  if (isPast) stateText = '<span style="color:#555;font-family:var(--font-label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;">● Closed — Deadline Passed</span>';
+  else if (isClosed) stateText = '<span style="color:#888;font-family:var(--font-label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;">● Currently In Production</span>';
+  else if (isActive) stateText = '<span style="color:var(--col-active);font-family:var(--font-label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;">★ Active Issue — Currently Producing</span>';
+  document.getElementById('modal-state-label').innerHTML = stateText;
+
+  let html = '';
+
+  // Active issue: show production checklist
+  if (isActive) {
+    const progress = getActiveProgress();
+    html += `<div class="modal-section">
+      <div class="modal-section-label">★ Production Checklist — ${progress}% Complete</div>
+      <div class="checklist">
+        ${PRODUCTION_CHECKLIST.map(item => {
+          const done = (checklistState[`${ckKey}_${item.key}`] === true);
+          return `<div class="checklist-item${done?' done':''}" onclick="toggleCheck('${ckKey}','${item.key}',this)">
+            <div class="ci-check">${done?'<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>':''}</div>
+            <div class="ci-title">${item.title}</div>
+            <div class="ci-week">${item.week}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  // Deadlines
+  html += `<div class="modal-section">
+    <div class="modal-section-label">📋 CL Production Deadlines</div>
+    <div class="deadline-grid">
+      ${deadlines.map(d => `
+        <div class="deadline-item">
+          <div class="deadline-date">${d.date}</div>
+          <div class="deadline-name">${d.title}</div>
+          ${d.detail ? `<div style="font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3;">${d.detail}</div>` : ''}
+        </div>
+      `).join('')}
+    </div>
+  </div>`;
+
+  // SYV events
+  if (syv.length > 0) {
+    html += `<div class="modal-section">
+      <div class="modal-section-label">🌿 SYV Community Events</div>
+      ${syv.map(e => `
+        <div class="modal-event">
+          <div class="modal-event-dot" style="background:var(--col-event-syv);"></div>
+          <div class="modal-event-content">
+            <div class="modal-event-date">${e.date}</div>
+            <div class="modal-event-title">${e.title}</div>
+            ${e.detail ? `<div class="modal-event-detail">${e.detail}</div>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>`;
+  }
+
+  // Custom events grouped
+  const typeGroups = {};
+  custom.forEach(e => {
+    if (!typeGroups[e.type]) typeGroups[e.type] = [];
+    typeGroups[e.type].push(e);
+  });
+
+  const typeIcons = { 'sbc-event':'🌊 SBC Events', photo:'📸 Photoshoots', feature:'⭐ Advertiser Features', 'syv-event':'🌿 SYV Events Added' };
+
+  Object.entries(typeGroups).forEach(([type, events]) => {
+    html += `<div class="modal-section">
+      <div class="modal-section-label">${typeIcons[type] || type}</div>
+      ${events.map((e, idx) => `
+        <div class="modal-event">
+          <div class="modal-event-dot" style="background:${typeColor(type)};"></div>
+          <div class="modal-event-content">
+            ${e.date ? `<div class="modal-event-date">${e.date}</div>` : ''}
+            <div class="modal-event-title">${e.title}</div>
+            ${e.detail ? `<div class="modal-event-detail">${e.detail}</div>` : ''}
+          </div>
+          <button class="delete-btn" onclick="deleteEvent('${year}-${month}','${type}',${custom.indexOf(e)})">✕</button>
+        </div>
+      `).join('')}
+    </div>`;
+  });
+
+  // Add event form
+  html += `
+    <button class="add-event-btn" onclick="toggleAddForm()">+ Add Photoshoot, SBC Event, or Advertiser Feature</button>
+    <div class="add-form" id="add-form">
+      <div class="form-row">
+        <div>
+          <label class="form-label">Type</label>
+          <select class="form-select" id="form-type">
+            <option value="sbc-event">SBC Event</option>
+            <option value="syv-event">Additional SYV Event</option>
+            <option value="photo">Photoshoot</option>
+            <option value="feature">Advertiser Feature</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">Date</label>
+          <input type="text" class="form-input" id="form-date" placeholder="e.g. Aug 15">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div>
+          <label class="form-label">Title</label>
+          <input type="text" class="form-input" id="form-title" placeholder="Name of event, shoot, or partner">
+        </div>
+      </div>
+      <div class="form-row single">
+        <div>
+          <label class="form-label">Details (optional)</label>
+          <input type="text" class="form-input" id="form-detail" placeholder="Location, time, notes">
+        </div>
+      </div>
+      <div class="form-btns">
+        <button class="form-save" onclick="saveEvent()">Save</button>
+        <button class="form-cancel" onclick="toggleAddForm()">Cancel</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modal-body').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function toggleCheck(ckKey, itemKey, el) {
+  const fullKey = `${ckKey}_${itemKey}`;
+  checklistState[fullKey] = !checklistState[fullKey];
+  localStorage.setItem('cl_checklist', JSON.stringify(checklistState));
+  el.classList.toggle('done', checklistState[fullKey]);
+  const check = el.querySelector('.ci-check');
+  check.innerHTML = checklistState[fullKey] ? '<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4L3.5 6.5L9 1" stroke="white" stroke-width="1.5" stroke-linecap="round"/></svg>' : '';
+  renderCalendar();
+}
+
+function toggleAddForm() {
+  document.getElementById('add-form').classList.toggle('open');
+}
+
+function saveEvent() {
+  if (!activeModal) return;
+  const type = document.getElementById('form-type').value;
+  const date = document.getElementById('form-date').value.trim();
+  const title = document.getElementById('form-title').value.trim();
+  const detail = document.getElementById('form-detail').value.trim();
+  if (!title) return;
+  const key = `${activeModal.year}-${activeModal.month}`;
+  customEvents.push({ key, type, date, title, detail });
+  localStorage.setItem('cl_custom_events', JSON.stringify(customEvents));
+  openModal(activeModal.year, activeModal.month);
+  renderCalendar();
+}
+
+function deleteEvent(key, type, idx) {
+  const filtered = customEvents.filter((e, i) => !(e.key === key && e.type === type && customEvents.filter(x => x.key === key && x.type === type).indexOf(e) === idx));
+  customEvents = customEvents.filter((e,i) => {
+    const sameGroup = customEvents.filter(x => x.key === key && x.type === type);
+    if (e.key === key && e.type === type) {
+      return sameGroup.indexOf(e) !== idx;
+    }
+    return true;
+  });
+  localStorage.setItem('cl_custom_events', JSON.stringify(customEvents));
+  if (activeModal) openModal(activeModal.year, activeModal.month);
+  renderCalendar();
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+    activeModal = null;
+  }
+}
+
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  activeModal = null;
+}
+
+function scrollToActive() {
+  const el = document.getElementById('active-issue-card');
+  if (el) el.scrollIntoView({ behavior:'smooth', block:'center' });
+}
+
+// Close AIS dropdown on outside click
+document.addEventListener('click', e => {
+  const dropdown = document.getElementById('ais-dropdown');
+  const btn = document.getElementById('ais-toggle-btn');
+  if (!dropdown.contains(e.target) && !btn.contains(e.target)) {
+    dropdown.classList.remove('open');
+  }
+});
+
+renderCalendar();
+</script>
+</body>
+</html>
