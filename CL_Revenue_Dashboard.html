@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYV | SBC City Lifestyle — Revenue Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Barlow+Condensed:wght@300;400;600;700;800&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0A0A0A;
+  --cream: #E8E0D5;
+  --greige: #C4B8A8;
+  --warm: #F5F0EB;
+  --warm-dark: #EDE5D8;
+  --text: #1A1A1A;
+  --muted: #6B6560;
+  --syv: #0A0A0A;
+  --sbc: #5C4B3A;
+  --green: #3B6D11;
+  --green-bg: #EAF3DE;
+  --red: #A32D2D;
+  --red-bg: #FCEBEB;
+  --amber: #854F0B;
+  --amber-bg: #FAEEDA;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-label: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+}
+
+body {
+  background: var(--warm);
+  font-family: var(--font-body);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── SETUP SCREEN ── */
+#setup-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+}
+
+.setup-card {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 48px;
+  max-width: 480px;
+  width: 90%;
+  text-align: center;
+}
+
+.setup-logo { margin-bottom: 32px; }
+
+.setup-logo svg { width: 52px; height: 52px; }
+
+.setup-title {
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.1em;
+  color: white;
+  margin-bottom: 6px;
+}
+
+.setup-sub {
+  font-family: var(--font-label);
+  font-weight: 300;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--greige);
+  text-transform: uppercase;
+  margin-bottom: 40px;
+}
+
+.setup-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--greige);
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.setup-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: #0A0A0A;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: white;
+  font-family: var(--font-body);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  margin-bottom: 24px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.setup-input:focus { border-color: var(--greige); }
+
+.setup-btn {
+  width: 100%;
+  padding: 14px;
+  background: white;
+  color: var(--black);
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.setup-btn:hover { background: var(--cream); }
+
+.setup-hint {
+  font-size: 11px;
+  color: #555;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+.setup-hint a { color: var(--greige); }
+
+.setup-error {
+  background: var(--red-bg);
+  color: var(--red);
+  border-radius: 4px;
+  padding: 10px 14px;
+  font-size: 12px;
+  margin-bottom: 16px;
+  display: none;
+  text-align: left;
+}
+
+/* ── DASHBOARD ── */
+#dashboard { display: none; }
+
+.db-header {
+  background: var(--black);
+  padding: 18px 36px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.db-logo { display: flex; align-items: center; gap: 14px; }
+.db-logo svg { width: 34px; height: 34px; }
+
+.db-brand-main {
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.08em;
+  color: white;
+  line-height: 1;
+}
+
+.db-brand-sub {
+  font-family: var(--font-label);
+  font-weight: 300;
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--greige);
+  text-transform: uppercase;
+  margin-top: 3px;
+}
+
+.db-header-right { display: flex; align-items: center; gap: 20px; }
+
+.db-refresh-btn {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--greige);
+  background: none;
+  border: 1px solid #333;
+  border-radius: 3px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.db-refresh-btn:hover { border-color: var(--greige); color: white; }
+
+.db-last-updated {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #444;
+}
+
+.db-year {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--greige);
+}
+
+.db-tabs {
+  background: var(--black);
+  display: flex;
+  padding: 0 36px;
+  border-top: 1px solid #1a1a1a;
+  gap: 2px;
+}
+
+.db-tab {
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #555;
+  padding: 10px 22px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.db-tab:hover:not(.active) { color: #999; }
+.db-tab.active { color: white; border-bottom-color: white; }
+
+.db-body { padding: 28px 36px; max-width: 1400px; margin: 0 auto; }
+
+/* ── LOADING ── */
+.loading-overlay {
+  position: fixed; inset: 0;
+  background: rgba(10,10,10,0.85);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+  flex-direction: column; gap: 16px;
+}
+
+.loading-spinner {
+  width: 36px; height: 36px;
+  border: 2px solid #333;
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--greige);
+}
+
+/* ── SECTION LABEL ── */
+.section-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 0.5px solid var(--greige);
+}
+
+/* ── HERO METRICS ── */
+.hero-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.hero-card {
+  background: var(--black);
+  border-radius: 6px;
+  padding: 22px 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+}
+
+.hero-card.on-track::before { background: #3B6D11; }
+.hero-card.off-track::before { background: #A32D2D; }
+.hero-card.near-track::before { background: #854F0B; }
+
+.hero-eyebrow {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--greige);
+  margin-bottom: 12px;
+}
+
+.hero-question {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+.hero-answer {
+  font-family: var(--font-label);
+  font-size: 38px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.hero-answer.on-track { color: #7BC950; }
+.hero-answer.off-track { color: #E86B6B; }
+.hero-answer.near-track { color: #F0A44A; }
+
+.hero-detail {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.hero-detail strong { color: #888; font-weight: 400; }
+
+/* ── PIPELINE COVERAGE ── */
+.pipeline-card {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 6px;
+  padding: 22px 24px;
+  margin-bottom: 28px;
+}
+
+.pipeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+}
+
+.pipeline-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.pipeline-months {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
+.pipeline-month {
+  text-align: center;
+}
+
+.pm-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.pm-track {
+  height: 60px;
+  background: var(--warm);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+
+.pm-fill {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  border-radius: 3px;
+  transition: height 0.6s ease;
+}
+
+.pm-fill.covered { background: #0A0A0A; }
+.pm-fill.partial { background: #854F0B; }
+.pm-fill.uncovered { background: #E8E0D5; height: 100% !important; }
+
+.pm-pct {
+  font-family: var(--font-label);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.pm-goal {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+/* ── KPI GRID ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.kpi-card {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+
+.kpi-label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.kpi-value {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--black);
+  line-height: 1;
+}
+
+.kpi-trend {
+  font-family: var(--font-body);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.trend-up { color: var(--green); }
+.trend-down { color: var(--red); }
+.trend-flat { color: var(--muted); }
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* ── CHARTS ── */
+.chart-wrap {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 6px;
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+}
+
+.chart-title {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.legend-row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.legend-swatch {
+  width: 10px; height: 10px;
+  border-radius: 1px; flex-shrink: 0;
+}
+
+/* ── BOTTOM GRID ── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.market-card {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 6px;
+  padding: 20px 22px;
+}
+
+.market-title {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 0.5px solid var(--greige);
+}
+
+.market-title.syv { color: var(--black); }
+.market-title.sbc { color: var(--sbc); }
+
+.market-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 6px 0;
+  border-bottom: 0.5px solid rgba(196,184,168,0.3);
+}
+
+.market-row:last-child { border-bottom: none; }
+
+.market-row-label {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.market-row-val {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--black);
+}
+
+.progress-bar-wrap { margin-top: 14px; }
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.progress-track {
+  height: 3px;
+  background: var(--cream);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.8s ease;
+}
+
+/* ── YTD TABLE ── */
+.ytd-wrap {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+th {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 400;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--greige);
+  background: var(--warm);
+}
+
+td {
+  padding: 9px 14px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  color: var(--black);
+  border-bottom: 0.5px solid rgba(196,184,168,0.25);
+}
+
+tr:last-child td { border-bottom: none; }
+
+.col-month {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── RENEWAL SECTION ── */
+.renewal-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 28px;
+}
+
+.renewal-item {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-left: 3px solid var(--greige);
+  border-radius: 4px;
+  padding: 12px 14px;
+}
+
+.renewal-item.urgent { border-left-color: var(--red); }
+.renewal-item.soon { border-left-color: var(--amber); }
+.renewal-item.healthy { border-left-color: var(--green); }
+
+.renewal-name {
+  font-family: var(--font-label);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--black);
+  margin-bottom: 4px;
+}
+
+.renewal-meta {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.renewal-alert {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  margin-top: 6px;
+}
+
+.renewal-alert.urgent { color: var(--red); }
+.renewal-alert.soon { color: var(--amber); }
+
+.nr-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.nr-card {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 4px;
+  padding: 14px 16px;
+}
+.nr-label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.nr-value {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--black);
+  line-height: 1;
+}
+.nr-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: var(--font-body);
+}
+.nr-bar-wrap { margin-top: 10px; }
+.nr-bar-track {
+  height: 3px;
+  background: var(--cream);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.nr-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" stroke="white" stroke-width="4"/>
+        <path d="M50 18 C32 18 18 32 18 50 C18 68 32 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <line x1="50" y1="22" x2="50" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M50 18 C68 18 82 32 82 50 C82 68 68 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="setup-title">SYV | SBC CITY LIFESTYLE</div>
+    <div class="setup-sub">Revenue Dashboard · First Time Setup</div>
+    <div id="setup-error" class="setup-error"></div>
+    <label class="setup-label">Notion Integration Token</label>
+    <input type="password" id="token-input" class="setup-input" placeholder="secret_xxxxxxxxxxxx" autocomplete="off">
+    <button class="setup-btn" onclick="saveToken()">Connect to Notion</button>
+    <p class="setup-hint">
+      Get your token at <a href="https://notion.so/my-integrations" target="_blank">notion.so/my-integrations</a><br>
+      Your token is saved locally in this browser — never shared.
+    </p>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading" class="loading-overlay" style="display:none;">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Fetching from Notion...</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header class="db-header">
+    <div class="db-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" stroke="white" stroke-width="4"/>
+        <path d="M50 18 C32 18 18 32 18 50 C18 68 32 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <line x1="50" y1="22" x2="50" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M50 18 C68 18 82 32 82 50 C82 68 68 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="db-brand-main">SYV | SBC</div>
+        <div class="db-brand-sub">City Lifestyle · Revenue Dashboard</div>
+      </div>
+    </div>
+    <div class="db-header-right">
+      <span class="db-last-updated" id="last-updated">—</span>
+      <button class="db-refresh-btn" onclick="loadData()">↻ Refresh</button>
+      <span class="db-year" id="db-year">2026</span>
+    </div>
+  </header>
+
+  <nav class="db-tabs">
+    <button class="db-tab active" onclick="switchTab('overview')">Overview</button>
+    <button class="db-tab" onclick="switchTab('syv')">Santa Ynez Valley</button>
+    <button class="db-tab" onclick="switchTab('sbc')">Santa Barbara Coast</button>
+    <button class="db-tab" onclick="switchTab('ytd')">YTD Detail</button>
+    <button class="db-tab" onclick="switchTab('renewals')">Renewals</button>
+  </nav>
+
+  <main class="db-body">
+
+    <!-- OVERVIEW PANEL -->
+    <div id="panel-overview" class="panel active">
+
+      <div class="section-label">Performance at a Glance · 2026</div>
+
+      <div class="hero-grid" id="hero-grid">
+        <div class="hero-card" id="hero-annual">
+          <div class="hero-eyebrow">Annual Goal</div>
+          <div class="hero-question">Are we on track for the full year?</div>
+          <div class="hero-answer" id="h-annual-pct">—</div>
+          <div class="hero-detail" id="h-annual-detail">Loading...</div>
+        </div>
+        <div class="hero-card" id="hero-3mo">
+          <div class="hero-eyebrow">Next 3 Months</div>
+          <div class="hero-question">Pipeline coverage for the next quarter?</div>
+          <div class="hero-answer" id="h-3mo-pct">—</div>
+          <div class="hero-detail" id="h-3mo-detail">Loading...</div>
+        </div>
+        <div class="hero-card" id="hero-6mo">
+          <div class="hero-eyebrow">Next 6 Months</div>
+          <div class="hero-question">Pipeline coverage for the next half?</div>
+          <div class="hero-answer" id="h-6mo-pct">—</div>
+          <div class="hero-detail" id="h-6mo-detail">Loading...</div>
+        </div>
+      </div>
+
+      <div class="pipeline-card">
+        <div class="pipeline-header">
+          <span class="chart-title">Pipeline Coverage — Next 6 Months</span>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-swatch" style="background:#0A0A0A;"></span>Covered</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#854F0B;"></span>Partial</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#E8E0D5; border:1px solid #C4B8A8;"></span>Gap</span>
+          </div>
+        </div>
+        <div class="pipeline-months" id="pipeline-months">
+          <div style="font-family:var(--font-label);font-size:11px;color:var(--muted);grid-column:1/-1;">Loading pipeline data...</div>
+        </div>
+      </div>
+
+      <div class="section-label">Key Performance Indicators · Year to Date</div>
+
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">Combined Gross YTD</div>
+          <div class="kpi-value" id="kpi-gross">—</div>
+          <div class="kpi-trend" id="kpi-gross-trend">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">% to Gross Goal</div>
+          <div class="kpi-value" id="kpi-pct">—</div>
+          <div class="kpi-sub" id="kpi-pct-sub">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Net Revenue YTD</div>
+          <div class="kpi-value" id="kpi-net">—</div>
+          <div class="kpi-trend" id="kpi-net-trend">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">SYV Gross YTD</div>
+          <div class="kpi-value" id="kpi-syv">—</div>
+          <div class="kpi-trend" id="kpi-syv-trend">—</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">SBC Gross YTD</div>
+          <div class="kpi-value" id="kpi-sbc">—</div>
+          <div class="kpi-trend" id="kpi-sbc-trend">—</div>
+        </div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <span class="chart-title">Combined Revenue — Goal vs Actual</span>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-swatch" style="background:#0A0A0A;"></span>Actual</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#C4B8A8;border:1px dashed #888;"></span>Goal</span>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:240px;">
+          <canvas id="chartCombined" role="img" aria-label="Combined revenue goal vs actual 2026">Combined 2026 revenue by month.</canvas>
+        </div>
+      </div>
+
+
+      <div class="section-label">New Revenue Closed · Month by Month</div>
+      <div class="nr-grid">
+        <div class="nr-card">
+          <div class="nr-label">SYV Print — New This Month</div>
+          <div class="nr-value" id="nr-syv-print">—</div>
+          <div class="nr-sub" id="nr-syv-print-ytd">— YTD</div>
+        </div>
+        <div class="nr-card">
+          <div class="nr-label">SYV Digital — New This Month</div>
+          <div class="nr-value" id="nr-syv-digital">—</div>
+          <div class="nr-sub" id="nr-syv-digital-ytd">— YTD</div>
+        </div>
+        <div class="nr-card">
+          <div class="nr-label">SBC Print — New This Month</div>
+          <div class="nr-value" id="nr-sbc-print">—</div>
+          <div class="nr-sub" id="nr-sbc-print-ytd">— YTD</div>
+        </div>
+        <div class="nr-card">
+          <div class="nr-label">SBC Digital — New This Month</div>
+          <div class="nr-value" id="nr-sbc-digital">—</div>
+          <div class="nr-sub" id="nr-sbc-digital-ytd">— YTD</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="margin-bottom:28px;">
+        <div class="chart-header">
+          <span class="chart-title">New Revenue Closed — Monthly Velocity</span>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-swatch" style="background:#0A0A0A;"></span>SYV Print</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#5C4B3A;"></span>SBC Print</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#C4B8A8;border:1px solid #888;"></span>Digital</span>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:200px;">
+          <canvas id="chartNewRevenue" role="img" aria-label="New revenue closed by month and channel">New revenue closed 2026.</canvas>
+        </div>
+      </div>
+
+      <div class="bottom-grid">
+        <div class="market-card">
+          <div class="market-title syv">Santa Ynez Valley</div>
+          <div class="market-row"><span class="market-row-label">Gross YTD</span><span class="market-row-val" id="syv-gross">—</span></div>
+          <div class="market-row"><span class="market-row-label">Net YTD</span><span class="market-row-val" id="syv-net">—</span></div>
+          <div class="market-row"><span class="market-row-label">Net Margin</span><span class="market-row-val" id="syv-margin">—</span></div>
+          <div class="market-row"><span class="market-row-label">Best Month</span><span class="market-row-val" id="syv-best">—</span></div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>Goal Attainment</span><span id="syv-pct-label">—</span></div>
+            <div class="progress-track"><div class="progress-fill" id="syv-bar" style="background:#0A0A0A;width:0%;"></div></div>
+          </div>
+        </div>
+        <div class="market-card">
+          <div class="market-title sbc">Santa Barbara Coast</div>
+          <div class="market-row"><span class="market-row-label">Gross YTD</span><span class="market-row-val" id="sbc-gross">—</span></div>
+          <div class="market-row"><span class="market-row-label">Net YTD</span><span class="market-row-val" id="sbc-net">—</span></div>
+          <div class="market-row"><span class="market-row-label">Net Margin</span><span class="market-row-val" id="sbc-margin">—</span></div>
+          <div class="market-row"><span class="market-row-label">Best Month</span><span class="market-row-val" id="sbc-best">—</span></div>
+          <div class="progress-bar-wrap">
+            <div class="progress-label"><span>Goal Attainment</span><span id="sbc-pct-label">—</span></div>
+            <div class="progress-track"><div class="progress-fill" id="sbc-bar" style="background:#5C4B3A;width:0%;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYV PANEL -->
+    <div id="panel-syv" class="panel">
+      <div class="section-label">Santa Ynez Valley · 2026 Monthly Performance</div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card"><div class="kpi-label">Gross YTD</div><div class="kpi-value" id="syv2-gross">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">% to Goal</div><div class="kpi-value" id="syv2-pct">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Net YTD</div><div class="kpi-value" id="syv2-net">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Monthly Avg</div><div class="kpi-value" id="syv2-avg">—</div></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <span class="chart-title">Santa Ynez Valley — Monthly Revenue</span>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-swatch" style="background:#0A0A0A;"></span>Actual</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#C4B8A8;border:1px dashed #888;"></span>Goal</span>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:260px;">
+          <canvas id="chartSYV" role="img" aria-label="SYV monthly revenue 2026">SYV 2026 monthly revenue.</canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- SBC PANEL -->
+    <div id="panel-sbc" class="panel">
+      <div class="section-label">Santa Barbara Coast · 2026 Monthly Performance</div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card"><div class="kpi-label">Gross YTD</div><div class="kpi-value" id="sbc2-gross">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">% to Goal</div><div class="kpi-value" id="sbc2-pct">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Net YTD</div><div class="kpi-value" id="sbc2-net">—</div></div>
+        <div class="kpi-card"><div class="kpi-label">Monthly Avg</div><div class="kpi-value" id="sbc2-avg">—</div></div>
+      </div>
+      <div class="chart-wrap">
+        <div class="chart-header">
+          <span class="chart-title">Santa Barbara Coast — Monthly Revenue</span>
+          <div class="legend-row">
+            <span class="legend-item"><span class="legend-swatch" style="background:#5C4B3A;"></span>Actual</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:#C4B8A8;border:1px dashed #888;"></span>Goal</span>
+          </div>
+        </div>
+        <div style="position:relative;width:100%;height:260px;">
+          <canvas id="chartSBC" role="img" aria-label="SBC monthly revenue 2026">SBC 2026 monthly revenue.</canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- YTD TABLE PANEL -->
+    <div id="panel-ytd" class="panel">
+      <div class="section-label">Full Year Detail · Month by Month</div>
+      <div class="ytd-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>SYV Actual</th><th>SYV Goal</th><th>SYV Gap</th>
+              <th>SBC Actual</th><th>SBC Goal</th><th>SBC Gap</th>
+              <th>Combined</th><th>Combined Goal</th>
+            </tr>
+          </thead>
+          <tbody id="ytd-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NEW REVENUE SECTION - injected into overview before renewals -->
+    <!-- end new revenue -->
+    <div id="panel-renewals" class="panel">
+      <div class="section-label">Renewal Pipeline · Accounts Expiring Within 120 Days</div>
+      <div class="renewal-grid" id="renewal-grid">
+        <div style="font-family:var(--font-label);font-size:11px;color:var(--muted);">Loading renewals...</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const GOALS_DB = '7151ab05-aeb9-4b8b-ad70-2fbafe4e21d5';
+const PIPELINE_DB = '3752672f-c383-8019-9bf6-cd4a2f0053fa';
+const ACCOUNTS_DB = 'f7adf79a-64d0-4516-8e36-999ab4a1c530';
+const PROXY = 'https://notion-proxy.sara-demarcus.workers.dev';
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let token = '';
+let charts = {};
+let appData = { syv: [], sbc: [], pipeline: [], accounts: [], newRevenue: Array(12).fill({syvPrint:0,syvDigital:0,sbcPrint:0,sbcDigital:0}) };
+
+function fmt(n) {
+  if (n === null || n === undefined) return '—';
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (abs >= 1000000) return sign + '$' + (abs/1000000).toFixed(1) + 'M';
+  if (abs >= 1000) return sign + '$' + Math.round(abs/1000) + 'K';
+  return sign + '$' + Math.round(abs).toLocaleString();
+}
+
+function pct(a, g) { return g > 0 ? Math.round(a / g * 100) : 0; }
+
+function setHeroCard(cardId, answerId, detailId, pctVal, detail) {
+  const card = document.getElementById(cardId);
+  const ans = document.getElementById(answerId);
+  const det = document.getElementById(detailId);
+  ans.textContent = pctVal + '%';
+  det.innerHTML = detail;
+  card.className = 'hero-card ' + (pctVal >= 100 ? 'on-track' : pctVal >= 75 ? 'near-track' : 'off-track');
+  ans.className = 'hero-answer ' + (pctVal >= 100 ? 'on-track' : pctVal >= 75 ? 'near-track' : 'off-track');
+}
+
+function trendArrow(curr, prev) {
+  if (prev === 0 || prev === null || curr === null) return '';
+  const delta = curr - prev;
+  const deltaPct = Math.round(Math.abs(delta) / Math.abs(prev) * 100);
+  if (delta > 0) return `<span class="trend-up">↑ ${fmt(delta)} vs prior month</span>`;
+  if (delta < 0) return `<span class="trend-down">↓ ${fmt(Math.abs(delta))} vs prior month</span>`;
+  return `<span class="trend-flat">— flat vs prior month</span>`;
+}
+
+async function notionQuery(dbId, filter) {
+  const body = { filter: filter || {}, page_size: 100 };
+  const resp = await fetch(`https://notion-proxy.sara-demarcus.workers.dev/v1/databases/${dbId}/query`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  if (!resp.ok) throw new Error('Notion API error: ' + resp.status);
+  return resp.json();
+}
+
+function getProp(page, name) {
+  const p = page.properties[name];
+  if (!p) return null;
+  if (p.type === 'number') return p.number;
+  if (p.type === 'title') return p.title?.[0]?.plain_text || '';
+  if (p.type === 'rich_text') return p.rich_text?.[0]?.plain_text || '';
+  if (p.type === 'select') return p.select?.name || '';
+  if (p.type === 'date') return p.date?.start || null;
+  if (p.type === 'formula') {
+    const f = p.formula;
+    if (f.type === 'number') return f.number;
+    if (f.type === 'string') return f.string;
+    if (f.type === 'boolean') return f.boolean;
+  }
+  if (p.type === 'rollup') {
+    const r = p.rollup;
+    if (r.type === 'number') return r.number;
+  }
+  return null;
+}
+
+function monthIndex(title) {
+  if (!title) return -1;
+  for (let i = 0; i < MONTH_NAMES.length; i++) {
+    if (title.includes(MONTH_NAMES[i]) || title.includes(String(i+1).padStart(2,'0'))) return i;
+  }
+  return -1;
+}
+
+async function loadData() {
+  showLoading(true);
+  try {
+    const [goalsRes, pipelineRes, accountsRes] = await Promise.all([
+      notionQuery(GOALS_DB),
+      notionQuery(PIPELINE_DB),
+      notionQuery(ACCOUNTS_DB)
+    ]);
+
+    const syv = Array(12).fill(null).map(() => ({ actual: 0, goal: 0, net: 0, netGoal: 0 }));
+    const sbc = Array(12).fill(null).map(() => ({ actual: 0, goal: 0, net: 0, netGoal: 0 }));
+
+    for (const page of goalsRes.results) {
+      const title = getProp(page, 'Month') || '';
+      const biz = getProp(page, 'Business') || '';
+      const idx = monthIndex(title);
+      if (idx < 0 || biz === 'Combined') continue;
+      const actual = getProp(page, 'Gross Revenue Actual ($)') || 0;
+      const goal = getProp(page, 'Gross Revenue Goal ($)') || 0;
+      const net = getProp(page, 'Net Actual ($)') || 0;
+      const netGoal = getProp(page, 'Net Goal ($)') || 0;
+      if (biz === 'SYVCL') { syv[idx].actual = actual; syv[idx].goal = goal; syv[idx].net = net; syv[idx].netGoal = netGoal; }
+      if (biz === 'SBCCL') { sbc[idx].actual = actual; sbc[idx].goal = goal; sbc[idx].net = net; sbc[idx].netGoal = netGoal; }
+    }
+
+    const pipeline = [];
+    for (const page of pipelineRes.results) {
+      const stage = getProp(page, 'Stage') || '';
+      if (stage.includes('Closed')) continue;
+      const dealVal = getProp(page, 'Deal Value ($)') || 0;
+      const biz = getProp(page, 'Business') || '';
+      const closeMonthRel = page.properties['Projected Close Month']?.relation || [];
+      pipeline.push({ dealVal, biz: String(biz), closeMonthIds: closeMonthRel.map(r => r.id) });
+    }
+
+    const accounts = [];
+    for (const page of accountsRes.results) {
+      const name = getProp(page, 'Account Name') || '';
+      const endDate = getProp(page, 'End Date');
+      const rate = getProp(page, 'Monthly Print Rate ($)') || 0;
+      const biz = getProp(page, 'Business') || '';
+      const status = getProp(page, 'Partnership Status') || '';
+      const renewalAlert = getProp(page, 'Renewal Alert') || '';
+      if (endDate && (status === 'Partner' || status === 'In progress')) {
+        const daysUntil = Math.floor((new Date(endDate) - new Date()) / 86400000);
+        if (daysUntil <= 120 && daysUntil > -35) {
+          accounts.push({ name, endDate, rate, biz: String(biz), daysUntil, renewalAlert });
+        }
+      }
+    }
+
+
+    const newRevenue = Array(12).fill(null).map(() => ({syvPrint:0,syvDigital:0,sbcPrint:0,sbcDigital:0}));
+    for (const page of goalsRes.results) {
+      const title = getProp(page, 'Month') || '';
+      const biz = getProp(page, 'Business') || '';
+      const idx = monthIndex(title);
+      if (idx < 0 || biz === 'Combined') continue;
+      const syvPrint = getProp(page, 'New Revenue - SYV Print ($)') || 0;
+      const syvDigital = getProp(page, 'New Revenue - SYV Digital ($)') || 0;
+      const sbcPrint = getProp(page, 'New Revenue - SBC Print ($)') || 0;
+      const sbcDigital = getProp(page, 'New Revenue - SBC Digital ($)') || 0;
+      if (biz === 'SYVCL') { newRevenue[idx].syvPrint = syvPrint; newRevenue[idx].syvDigital = syvDigital; }
+      if (biz === 'SBCCL') { newRevenue[idx].sbcPrint = sbcPrint; newRevenue[idx].sbcDigital = sbcDigital; }
+    }
+
+    appData = { syv, sbc, pipeline, accounts, newRevenue };
+    renderDashboard();
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+  } catch(e) {
+    alert('Error fetching Notion data: ' + e.message + '\n\nMake sure your integration token is correct and you have shared your databases with the integration.');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function renderDashboard() {
+  const { syv, sbc, pipeline } = appData;
+  const today = new Date();
+  const currentMonth = today.getMonth();
+
+  const monthsWithData = syv.filter((m, i) => i <= currentMonth && m.actual > 0).length;
+  const n = Math.max(monthsWithData, 1);
+
+  const syvGrossYTD = syv.slice(0,n).reduce((a,m)=>a+m.actual,0);
+  const syvGoalYTD  = syv.slice(0,n).reduce((a,m)=>a+m.goal,0);
+  const syvNetYTD   = syv.slice(0,n).reduce((a,m)=>a+m.net,0);
+  const sbcGrossYTD = sbc.slice(0,n).reduce((a,m)=>a+m.actual,0);
+  const sbcGoalYTD  = sbc.slice(0,n).reduce((a,m)=>a+m.goal,0);
+  const sbcNetYTD   = sbc.slice(0,n).reduce((a,m)=>a+m.net,0);
+  const totGross = syvGrossYTD + sbcGrossYTD;
+  const totGoal  = syvGoalYTD + sbcGoalYTD;
+  const totNet   = syvNetYTD + sbcNetYTD;
+
+  const annualSYVGoal = syv.reduce((a,m)=>a+m.goal,0);
+  const annualSBCGoal = sbc.reduce((a,m)=>a+m.goal,0);
+  const annualGoal = annualSYVGoal + annualSBCGoal;
+  const annualActual = totGross;
+  const annualPct = pct(annualActual, annualGoal);
+
+  const mo3Start = n;
+  const mo3End = Math.min(n + 3, 12);
+  const goal3mo = syv.slice(mo3Start,mo3End).reduce((a,m)=>a+m.goal,0) + sbc.slice(mo3Start,mo3End).reduce((a,m)=>a+m.goal,0);
+  const goal6mo = syv.slice(mo3Start,Math.min(n+6,12)).reduce((a,m)=>a+m.goal,0) + sbc.slice(mo3Start,Math.min(n+6,12)).reduce((a,m)=>a+m.goal,0);
+
+  const pipelineTotal = pipeline.reduce((a,p)=>a+p.dealVal,0);
+  const pipe3moPct = pct(pipelineTotal, goal3mo);
+  const pipe6moPct = pct(pipelineTotal, goal6mo);
+
+  setHeroCard('hero-annual','h-annual-pct','h-annual-detail', annualPct,
+    `${fmt(annualActual)} earned of ${fmt(annualGoal)} annual goal<br><strong>Gap remaining: ${fmt(annualGoal - annualActual)}</strong>`);
+
+  setHeroCard('hero-3mo','h-3mo-pct','h-3mo-detail', pipe3moPct,
+    `${fmt(pipelineTotal)} in pipeline vs ${fmt(goal3mo)} needed<br><strong>Gap: ${fmt(Math.max(0, goal3mo - pipelineTotal))}</strong>`);
+
+  setHeroCard('hero-6mo','h-6mo-pct','h-6mo-detail', pipe6moPct,
+    `${fmt(pipelineTotal)} in pipeline vs ${fmt(goal6mo)} needed<br><strong>Gap: ${fmt(Math.max(0, goal6mo - pipelineTotal))}</strong>`);
+
+  const pipeMonths = document.getElementById('pipeline-months');
+  pipeMonths.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const mi = (n + i) % 12;
+    if (mi >= 12) break;
+    const mGoal = (syv[mi]?.goal || 0) + (sbc[mi]?.goal || 0);
+    const mPipe = pipelineTotal / 6;
+    const coverage = mGoal > 0 ? Math.min(Math.round(mPipe/mGoal*100), 100) : 0;
+    const cls = coverage >= 100 ? 'covered' : coverage >= 50 ? 'partial' : 'uncovered';
+    pipeMonths.innerHTML += `
+      <div class="pipeline-month">
+        <div class="pm-label">${MONTHS[mi]}</div>
+        <div class="pm-track">
+          <div class="pm-fill ${cls !== 'uncovered' ? cls : ''}" style="height:${cls !== 'uncovered' ? coverage : 100}%; background:${cls === 'covered' ? '#0A0A0A' : cls === 'partial' ? '#854F0B' : '#E8E0D5'};"></div>
+        </div>
+        <div class="pm-pct">${coverage}%</div>
+        <div class="pm-goal">${fmt(mGoal)}</div>
+      </div>`;
+  }
+
+  document.getElementById('kpi-gross').textContent = fmt(totGross);
+  document.getElementById('kpi-gross-trend').innerHTML = trendArrow(syv[n-1]?.actual + sbc[n-1]?.actual, syv[n-2]?.actual + sbc[n-2]?.actual);
+  document.getElementById('kpi-pct').textContent = pct(totGross, totGoal) + '%';
+  document.getElementById('kpi-pct-sub').textContent = 'vs ' + fmt(totGoal) + ' goal';
+  document.getElementById('kpi-net').textContent = fmt(totNet);
+  document.getElementById('kpi-net-trend').innerHTML = trendArrow(syvNetYTD + sbcNetYTD, syv.slice(0,n-1).reduce((a,m)=>a+m.net,0) + sbc.slice(0,n-1).reduce((a,m)=>a+m.net,0));
+  document.getElementById('kpi-syv').textContent = fmt(syvGrossYTD);
+  document.getElementById('kpi-syv-trend').innerHTML = trendArrow(syv[n-1]?.actual, syv[n-2]?.actual);
+  document.getElementById('kpi-sbc').textContent = fmt(sbcGrossYTD);
+  document.getElementById('kpi-sbc-trend').innerHTML = trendArrow(sbc[n-1]?.actual, sbc[n-2]?.actual);
+
+  const syvBestIdx = syv.slice(0,n).reduce((bi,m,i,arr)=>m.actual>arr[bi].actual?i:bi,0);
+  const sbcBestIdx = sbc.slice(0,n).reduce((bi,m,i,arr)=>m.actual>arr[bi].actual?i:bi,0);
+  const syvPctVal = pct(syvGrossYTD, syvGoalYTD);
+  const sbcPctVal = pct(sbcGrossYTD, sbcGoalYTD);
+
+  document.getElementById('syv-gross').textContent = fmt(syvGrossYTD);
+  document.getElementById('syv-net').textContent = fmt(syvNetYTD);
+  document.getElementById('syv-margin').textContent = syvGrossYTD > 0 ? Math.round(syvNetYTD/syvGrossYTD*100) + '%' : '—';
+  document.getElementById('syv-best').textContent = MONTHS[syvBestIdx];
+  document.getElementById('syv-pct-label').textContent = syvPctVal + '%';
+  document.getElementById('syv-bar').style.width = Math.min(syvPctVal, 100) + '%';
+
+  document.getElementById('sbc-gross').textContent = fmt(sbcGrossYTD);
+  document.getElementById('sbc-net').textContent = fmt(sbcNetYTD);
+  document.getElementById('sbc-margin').textContent = sbcGrossYTD > 0 ? Math.round(sbcNetYTD/sbcGrossYTD*100) + '%' : '—';
+  document.getElementById('sbc-best').textContent = MONTHS[sbcBestIdx];
+  document.getElementById('sbc-pct-label').textContent = sbcPctVal + '%';
+  document.getElementById('sbc-bar').style.width = Math.min(sbcPctVal, 100) + '%';
+
+  document.getElementById('syv2-gross').textContent = fmt(syvGrossYTD);
+  document.getElementById('syv2-pct').textContent = syvPctVal + '%';
+  document.getElementById('syv2-net').textContent = fmt(syvNetYTD);
+  document.getElementById('syv2-avg').textContent = fmt(syvGrossYTD / n);
+
+  document.getElementById('sbc2-gross').textContent = fmt(sbcGrossYTD);
+  document.getElementById('sbc2-pct').textContent = sbcPctVal + '%';
+  document.getElementById('sbc2-net').textContent = fmt(sbcNetYTD);
+  document.getElementById('sbc2-avg').textContent = fmt(sbcGrossYTD / n);
+
+  const tbody = document.getElementById('ytd-tbody');
+  tbody.innerHTML = '';
+  for (let i = 0; i < 12; i++) {
+    const hasData = syv[i].actual > 0 || sbc[i].actual > 0;
+    const sg = syv[i].actual - syv[i].goal;
+    const bg = sbc[i].actual - sbc[i].goal;
+    tbody.innerHTML += `<tr style="${!hasData ? 'opacity:0.4;' : ''}">
+      <td class="col-month">${MONTH_NAMES[i]}</td>
+      <td>${hasData ? fmt(syv[i].actual) : '—'}</td>
+      <td style="color:var(--muted);font-size:12px;">${fmt(syv[i].goal)}</td>
+      <td class="${sg>=0?'pos':'neg'}">${hasData ? (sg>=0?'+':'')+fmt(sg) : '—'}</td>
+      <td>${hasData ? fmt(sbc[i].actual) : '—'}</td>
+      <td style="color:var(--muted);font-size:12px;">${fmt(sbc[i].goal)}</td>
+      <td class="${bg>=0?'pos':'neg'}">${hasData ? (bg>=0?'+':'')+fmt(bg) : '—'}</td>
+      <td>${hasData ? fmt(syv[i].actual+sbc[i].actual) : '—'}</td>
+      <td style="color:var(--muted);font-size:12px;">${fmt(syv[i].goal+sbc[i].goal)}</td>
+    </tr>`;
+  }
+
+  const renewalGrid = document.getElementById('renewal-grid');
+  renewalGrid.innerHTML = '';
+  const sorted = appData.accounts.sort((a,b) => a.daysUntil - b.daysUntil);
+  if (sorted.length === 0) {
+    renewalGrid.innerHTML = '<div style="font-family:var(--font-label);font-size:11px;color:var(--muted);">No renewals due within 120 days.</div>';
+  } else {
+    for (const acct of sorted) {
+      const urgency = acct.daysUntil <= 35 ? 'urgent' : acct.daysUntil <= 60 ? 'soon' : 'healthy';
+      const alertLabel = acct.daysUntil <= 35 ? '⚡ Close Now' : acct.daysUntil <= 60 ? '📄 Proposal Time' : '👋 Touch Base';
+      renewalGrid.innerHTML += `
+        <div class="renewal-item ${urgency}">
+          <div class="renewal-name">${acct.name}</div>
+          <div class="renewal-meta">${acct.biz} · ${fmt(acct.rate)}/mo</div>
+          <div class="renewal-meta">Expires ${new Date(acct.endDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+          <div class="renewal-alert ${urgency}">${alertLabel} · ${acct.daysUntil} days</div>
+        </div>`;
+    }
+  }
+
+
+  // New Revenue section
+  const nrSYVPrintMo = appData.newRevenue[n-1]?.syvPrint || 0;
+  const nrSYVDigMo = appData.newRevenue[n-1]?.syvDigital || 0;
+  const nrSBCPrintMo = appData.newRevenue[n-1]?.sbcPrint || 0;
+  const nrSBCDigMo = appData.newRevenue[n-1]?.sbcDigital || 0;
+  const nrSYVPrintYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.syvPrint||0),0);
+  const nrSYVDigYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.syvDigital||0),0);
+  const nrSBCPrintYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.sbcPrint||0),0);
+  const nrSBCDigYTD = appData.newRevenue.slice(0,n).reduce((a,m)=>a+(m?.sbcDigital||0),0);
+
+  document.getElementById('nr-syv-print').textContent = fmt(nrSYVPrintMo);
+  document.getElementById('nr-syv-print-ytd').textContent = fmt(nrSYVPrintYTD) + ' YTD';
+  document.getElementById('nr-syv-digital').textContent = fmt(nrSYVDigMo);
+  document.getElementById('nr-syv-digital-ytd').textContent = fmt(nrSYVDigYTD) + ' YTD';
+  document.getElementById('nr-sbc-print').textContent = fmt(nrSBCPrintMo);
+  document.getElementById('nr-sbc-print-ytd').textContent = fmt(nrSBCPrintYTD) + ' YTD';
+  document.getElementById('nr-sbc-digital').textContent = fmt(nrSBCDigMo);
+  document.getElementById('nr-sbc-digital-ytd').textContent = fmt(nrSBCDigYTD) + ' YTD';
+
+  if (charts.newRevenue) charts.newRevenue.destroy();
+  charts.newRevenue = new Chart(document.getElementById('chartNewRevenue'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: 'SYV Print', data: appData.newRevenue.map(m=>m?.syvPrint||0), backgroundColor: '#0A0A0A', borderRadius: 2, stack: 'syv' },
+        { label: 'SYV Digital', data: appData.newRevenue.map(m=>m?.syvDigital||0), backgroundColor: '#444', borderRadius: 2, stack: 'syv' },
+        { label: 'SBC Print', data: appData.newRevenue.map(m=>m?.sbcPrint||0), backgroundColor: '#5C4B3A', borderRadius: 2, stack: 'sbc' },
+        { label: 'SBC Digital', data: appData.newRevenue.map(m=>m?.sbcDigital||0), backgroundColor: '#C4B8A8', borderRadius: 2, stack: 'sbc' }
+      ]
+    },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ' ' + fmt(ctx.raw) } } }, scales: { x: { grid: gridOpts, ticks: tickOpts, stacked: true }, y: { grid: gridOpts, ticks: { ...tickOpts, callback: fmtTick }, beginAtZero: true, stacked: true } } }
+  });
+
+  renderCharts(syv, sbc, n);
+}
+
+function renderCharts(syv, sbc, n) {
+  const labels = MONTHS;
+  const tickOpts = { font: { family: "'Barlow Condensed', sans-serif", size: 11 }, color: '#6B6560', maxRotation: 0, autoSkip: false };
+  const gridOpts = { color: 'rgba(196,184,168,0.3)', drawBorder: false };
+  const fmtTick = v => v >= 1000 ? '$' + Math.round(v/1000) + 'K' : '$' + v;
+  const tooltipFmt = ctx => ' ' + fmt(ctx.raw);
+
+  const baseOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: tooltipFmt } } },
+    scales: {
+      x: { grid: gridOpts, ticks: tickOpts },
+      y: { grid: gridOpts, ticks: { ...tickOpts, callback: fmtTick }, beginAtZero: false }
+    }
+  };
+
+  if (charts.combined) charts.combined.destroy();
+  charts.combined = new Chart(document.getElementById('chartCombined'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Actual', data: syv.map((m,i)=>m.actual+sbc[i].actual), backgroundColor: labels.map((_,i)=>i<n?'#0A0A0A':'rgba(10,10,10,0.2)'), borderRadius: 2, categoryPercentage:0.7, barPercentage:0.45 },
+        { label: 'Goal', data: syv.map((m,i)=>m.goal+sbc[i].goal), backgroundColor: 'rgba(196,184,168,0.4)', borderColor:'#C4B8A8', borderWidth:1, borderRadius:2, categoryPercentage:0.7, barPercentage:0.45 }
+      ]
+    },
+    options: baseOpts
+  });
+
+  if (charts.syv) charts.syv.destroy();
+  charts.syv = new Chart(document.getElementById('chartSYV'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Actual', data: syv.map(m=>m.actual), backgroundColor: labels.map((_,i)=>i<n?'#0A0A0A':'rgba(10,10,10,0.15)'), borderRadius: 2, categoryPercentage:0.7, barPercentage:0.45 },
+        { label: 'Goal', data: syv.map(m=>m.goal), backgroundColor: 'rgba(196,184,168,0.4)', borderColor:'#C4B8A8', borderWidth:1, borderRadius:2, categoryPercentage:0.7, barPercentage:0.45 }
+      ]
+    },
+    options: baseOpts
+  });
+
+  if (charts.sbc) charts.sbc.destroy();
+  charts.sbc = new Chart(document.getElementById('chartSBC'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Actual', data: sbc.map(m=>m.actual), backgroundColor: labels.map((_,i)=>i<n?'#5C4B3A':'rgba(92,75,58,0.15)'), borderRadius: 2, categoryPercentage:0.7, barPercentage:0.45 },
+        { label: 'Goal', data: sbc.map(m=>m.goal), backgroundColor: 'rgba(196,184,168,0.4)', borderColor:'#C4B8A8', borderWidth:1, borderRadius:2, categoryPercentage:0.7, barPercentage:0.45 }
+      ]
+    },
+    options: baseOpts
+  });
+}
+
+function switchTab(name) {
+  document.querySelectorAll('.db-tab').forEach((t,i) => {
+    t.classList.toggle('active', ['overview','syv','sbc','ytd','renewals'][i] === name);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+}
+
+function showLoading(show) {
+  document.getElementById('loading').style.display = show ? 'flex' : 'none';
+}
+
+function saveToken() {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val.startsWith('secret_') && !val.startsWith('ntn_')) {
+    const err = document.getElementById('setup-error');
+    err.textContent = 'Token must start with "secret_" or "ntn_". Check notion.so/my-integrations.';
+    err.style.display = 'block';
+    return;
+  }
+  token = val;
+  localStorage.setItem('cl_notion_token_v2', val);
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadData();
+}
+
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('cl_notion_token_v2');
+  if (saved) {
+    token = saved;
+    document.getElementById('setup-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadData();
+  }
+});
+</script>
+</body>
+</html>

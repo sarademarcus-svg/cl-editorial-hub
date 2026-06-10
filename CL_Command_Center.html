@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SYV | SBC — Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Barlow+Condensed:wght@300;400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0A0A0A;
+  --cream: #E8E0D5;
+  --greige: #C4B8A8;
+  --warm: #F5F0EB;
+  --text: #1A1A1A;
+  --muted: #6B6560;
+  --green: #3B6D11;
+  --green-light: #EAF3DE;
+  --grey-pipeline: #C4B8A8;
+  --grey-pipeline-light: #F0EBE4;
+  --font-display: 'Cormorant Garamond', Georgia, serif;
+  --font-label: 'Barlow Condensed', sans-serif;
+  --font-body: 'Barlow', sans-serif;
+}
+
+body {
+  background: var(--warm);
+  font-family: var(--font-body);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── SETUP ── */
+#setup {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--black);
+}
+
+.setup-card {
+  background: #161616;
+  border: 1px solid #2a2a2a;
+  border-radius: 8px;
+  padding: 48px;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+}
+
+.setup-logo svg { width: 44px; height: 44px; margin-bottom: 24px; }
+
+.setup-title {
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.setup-sub {
+  font-family: var(--font-label);
+  font-weight: 300;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--greige);
+  text-transform: uppercase;
+  margin-bottom: 32px;
+}
+
+.setup-label {
+  display: block;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--greige);
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.setup-input {
+  width: 100%;
+  padding: 11px 14px;
+  background: #0A0A0A;
+  border: 1px solid #333;
+  border-radius: 4px;
+  color: white;
+  font-family: var(--font-body);
+  font-size: 13px;
+  margin-bottom: 20px;
+  outline: none;
+}
+
+.setup-input:focus { border-color: var(--greige); }
+
+.setup-btn {
+  width: 100%;
+  padding: 13px;
+  background: white;
+  color: var(--black);
+  border: none;
+  border-radius: 4px;
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.setup-btn:hover { background: var(--cream); }
+.setup-hint { font-size: 11px; color: #444; margin-top: 16px; line-height: 1.6; }
+.setup-hint a { color: var(--greige); }
+.setup-error { background: #2a1010; color: #E86B6B; border-radius: 4px; padding: 10px 14px; font-size: 12px; margin-bottom: 16px; display: none; text-align: left; }
+
+/* ── LOADING ── */
+#loading {
+  position: fixed; inset: 0;
+  background: rgba(10,10,10,0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.spinner {
+  width: 32px; height: 32px;
+  border: 2px solid #333;
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.loading-text {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--greige);
+}
+
+/* ── MAIN ── */
+#main { display: none; flex-direction: column; min-height: 100vh; }
+
+/* ── HEADER ── */
+.header {
+  background: var(--black);
+  padding: 18px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-logo { display: flex; align-items: center; gap: 12px; }
+.header-logo svg { width: 30px; height: 30px; }
+.brand-main { font-family: var(--font-label); font-weight: 700; font-size: 15px; letter-spacing: 0.1em; color: white; line-height: 1; }
+.brand-sub { font-family: var(--font-label); font-weight: 300; font-size: 9px; letter-spacing: 0.2em; color: var(--greige); text-transform: uppercase; margin-top: 3px; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.month-select {
+  font-family: var(--font-label);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  color: var(--greige);
+  padding: 6px 12px;
+  border-radius: 3px;
+  outline: none;
+  cursor: pointer;
+}
+
+.refresh-btn {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--greige);
+  background: none;
+  border: 1px solid #333;
+  border-radius: 3px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.refresh-btn:hover { border-color: var(--greige); color: white; }
+
+.last-updated {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #333;
+}
+
+/* ── BODY ── */
+.body { padding: 36px 40px; flex: 1; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+/* ── HERO ── */
+.hero {
+  background: var(--black);
+  border-radius: 8px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.hero-left { flex: 1; }
+
+.hero-eyebrow {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 300;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--greige);
+  margin-bottom: 8px;
+}
+
+.hero-question {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 300;
+  font-style: italic;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 12px;
+}
+
+.hero-answer {
+  font-family: var(--font-label);
+  font-weight: 700;
+  font-size: 52px;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+
+.hero-detail {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: #555;
+}
+
+.hero-right {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.hero-stat-label {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #444;
+  margin-bottom: 4px;
+}
+
+.hero-stat-val {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 600;
+  color: white;
+  line-height: 1;
+}
+
+.hero-stat-sub {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: #555;
+  margin-top: 2px;
+}
+
+/* ── MARKETS ── */
+.markets { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+.market-card {
+  background: white;
+  border: 0.5px solid var(--greige);
+  border-radius: 8px;
+  padding: 24px 26px;
+}
+
+.market-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.market-name {
+  font-family: var(--font-label);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.market-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.market-path-pct {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 300;
+  font-style: italic;
+  color: var(--muted);
+}
+
+/* ── BIG NUMBERS ── */
+.market-numbers {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mn-item { }
+
+.mn-label {
+  font-family: var(--font-label);
+  font-size: 9px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.mn-swatch {
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.mn-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.mn-value.green { color: var(--green); }
+.mn-value.grey { color: #8A8078; }
+.mn-value.gap { color: var(--text); }
+
+/* ── PROGRESS BAR ── */
+.progress-section { }
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.progress-label-left {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.progress-label-right {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.progress-track {
+  height: 12px;
+  background: #F0EBE4;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-green {
+  height: 100%;
+  background: var(--green);
+  border-radius: 6px 0 0 6px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: width 0.8s ease;
+}
+
+.progress-grey {
+  height: 100%;
+  background: var(--greige);
+  position: absolute;
+  top: 0;
+  transition: width 0.8s ease, left 0.8s ease;
+}
+
+.progress-goal-marker {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  background: var(--black);
+  border-radius: 1px;
+  z-index: 2;
+}
+
+.progress-legend {
+  display: flex;
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.legend-swatch {
+  width: 10px; height: 6px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.status-pill {
+  font-family: var(--font-label);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  border-radius: 3px;
+  margin-top: 12px;
+  display: inline-block;
+}
+
+.pill-green { background: var(--green-light); color: var(--green); }
+.pill-amber { background: #FAEEDA; color: #854F0B; }
+.pill-red { background: #FCEBEB; color: #A32D2D; }
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="setup-card">
+    <div class="setup-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" stroke="white" stroke-width="4"/>
+        <path d="M50 18 C32 18 18 32 18 50 C18 68 32 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <line x1="50" y1="22" x2="50" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M50 18 C68 18 82 32 82 50 C82 68 68 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="setup-title">SYV | SBC CITY LIFESTYLE</div>
+    <div class="setup-sub">Command Center · Connect to Notion</div>
+    <div id="setup-error" class="setup-error"></div>
+    <label class="setup-label">Notion Integration Token</label>
+    <input type="password" id="token-input" class="setup-input" placeholder="ntn_xxxxxxxxxxxx" autocomplete="off">
+    <button class="setup-btn" onclick="saveToken()">Connect</button>
+    <p class="setup-hint">Get your token at <a href="https://notion.so/my-integrations" target="_blank">notion.so/my-integrations</a><br>Saved locally — never shared.</p>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text">Fetching from Notion...</div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <header class="header">
+    <div class="header-logo">
+      <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="46" stroke="white" stroke-width="4"/>
+        <path d="M50 18 C32 18 18 32 18 50 C18 68 32 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <line x1="50" y1="22" x2="50" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
+        <path d="M50 18 C68 18 82 32 82 50 C82 68 68 82 50 82" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div>
+        <div class="brand-main">SYV | SBC</div>
+        <div class="brand-sub">Command Center</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" id="last-updated">—</span>
+      <select class="month-select" id="month-select" onchange="render()">
+        <option value="07 - July 2026">July 2026</option>
+        <option value="08 - August 2026" selected>August 2026</option>
+        <option value="09 - September 2026">September 2026</option>
+        <option value="10 - October 2026">October 2026</option>
+        <option value="11 - November 2026">November 2026</option>
+        <option value="12 - December 2026">December 2026</option>
+      </select>
+      <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="hero-left">
+        <div class="hero-eyebrow" id="hero-month">August 2026</div>
+        <div class="hero-question">Are we on track to hit goal?</div>
+        <div class="hero-answer" id="hero-pct" style="color:white;">—</div>
+        <div class="hero-detail" id="hero-detail">Loading...</div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-stat-label">Gap remaining</div>
+        <div class="hero-stat-val" id="hero-gap">—</div>
+        <div class="hero-stat-sub" id="hero-gap-sub">to combined goal</div>
+      </div>
+    </div>
+
+    <!-- MARKETS -->
+    <div class="markets">
+
+      <!-- SYV -->
+      <div class="market-card">
+        <div class="market-header">
+          <div class="market-name">
+            <span class="market-dot" style="background:var(--black);"></span>
+            Santa Ynez Valley
+          </div>
+          <div class="market-path-pct" id="syv-path-pct">Path to goal: —</div>
+        </div>
+
+        <div class="market-numbers">
+          <div class="mn-item">
+            <div class="mn-label"><span class="mn-swatch" style="background:var(--green);"></span>Closed Won</div>
+            <div class="mn-value green" id="syv-actual">—</div>
+          </div>
+          <div class="mn-item">
+            <div class="mn-label"><span class="mn-swatch" style="background:var(--greige);"></span>Pipeline</div>
+            <div class="mn-value grey" id="syv-pipeline">—</div>
+          </div>
+          <div class="mn-item">
+            <div class="mn-label">Goal</div>
+            <div class="mn-value gap" id="syv-goal">—</div>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <div class="progress-labels">
+            <span class="progress-label-left">Progress to goal</span>
+            <span class="progress-label-right" id="syv-pct-label">—</span>
+          </div>
+          <div class="progress-track" id="syv-track">
+            <div class="progress-green" id="syv-green-bar" style="width:0%;"></div>
+            <div class="progress-grey" id="syv-grey-bar" style="left:0%;width:0%;"></div>
+            <div class="progress-goal-marker" style="left:100%;"></div>
+          </div>
+          <div class="progress-legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--green);"></span>Closed won</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--greige);"></span>Pipeline (projected)</span>
+          </div>
+          <div id="syv-status"></div>
+        </div>
+      </div>
+
+      <!-- SBC -->
+      <div class="market-card">
+        <div class="market-header">
+          <div class="market-name">
+            <span class="market-dot" style="background:#5C4B3A;"></span>
+            Santa Barbara Coast
+          </div>
+          <div class="market-path-pct" id="sbc-path-pct">Path to goal: —</div>
+        </div>
+
+        <div class="market-numbers">
+          <div class="mn-item">
+            <div class="mn-label"><span class="mn-swatch" style="background:var(--green);"></span>Closed Won</div>
+            <div class="mn-value green" id="sbc-actual">—</div>
+          </div>
+          <div class="mn-item">
+            <div class="mn-label"><span class="mn-swatch" style="background:var(--greige);"></span>Pipeline</div>
+            <div class="mn-value grey" id="sbc-pipeline">—</div>
+          </div>
+          <div class="mn-item">
+            <div class="mn-label">Goal</div>
+            <div class="mn-value gap" id="sbc-goal">—</div>
+          </div>
+        </div>
+
+        <div class="progress-section">
+          <div class="progress-labels">
+            <span class="progress-label-left">Progress to goal</span>
+            <span class="progress-label-right" id="sbc-pct-label">—</span>
+          </div>
+          <div class="progress-track" id="sbc-track">
+            <div class="progress-green" id="sbc-green-bar" style="width:0%;"></div>
+            <div class="progress-grey" id="sbc-grey-bar" style="left:0%;width:0%;"></div>
+            <div class="progress-goal-marker" style="left:100%;"></div>
+          </div>
+          <div class="progress-legend">
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--green);"></span>Closed won</span>
+            <span class="legend-item"><span class="legend-swatch" style="background:var(--greige);"></span>Pipeline (projected)</span>
+          </div>
+          <div id="sbc-status"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const GOALS_DB = '7151ab05-aeb9-4b8b-ad70-2fbafe4e21d5';
+const PIPELINE_DB = '3752672f-c383-8019-9bf6-cd4a2f0053fa';
+const PROXY = 'https://notion-proxy.sara-demarcus.workers.dev';
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+let token = '';
+let notionData = { syv: {}, sbc: {} };
+
+function fmt(n) {
+  if (n === null || n === undefined) return '—';
+  const abs = Math.abs(n);
+  const sign = n < 0 ? '-' : '';
+  if (abs >= 1000) return sign + '$' + Math.round(abs / 1000) + 'K';
+  return sign + '$' + Math.round(abs).toLocaleString();
+}
+
+function pct(a, g) { return g > 0 ? Math.round(a / g * 100) : 0; }
+
+async function notionQuery(dbId, extraFilter) {
+  const filter = extraFilter || {};
+  const resp = await fetch(`${PROXY}/v1/databases/${dbId}/query`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + token,
+      'Content-Type': 'application/json',
+      'Notion-Version': '2022-06-28'
+    },
+    body: JSON.stringify({ filter, page_size: 100 })
+  });
+  if (!resp.ok) throw new Error('Notion API error: ' + resp.status);
+  return resp.json();
+}
+
+function getProp(page, name) {
+  const p = page.properties[name];
+  if (!p) return null;
+  if (p.type === 'number') return p.number;
+  if (p.type === 'title') return p.title?.[0]?.plain_text || '';
+  if (p.type === 'select') return p.select?.name || '';
+  if (p.type === 'rollup') return p.rollup?.type === 'number' ? p.rollup.number : null;
+  if (p.type === 'formula') {
+    const f = p.formula;
+    if (f.type === 'number') return f.number;
+    if (f.type === 'string') return f.string;
+  }
+  return null;
+}
+
+function getAutoMonth() {
+  const today = new Date();
+  const day = today.getDate();
+  const offset = day < 22 ? 2 : 3;
+  const d = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+  const mo = String(d.getMonth() + 1).padStart(2, '0');
+  const name = MONTHS[d.getMonth()];
+  return `${mo} - ${name} ${d.getFullYear()}`;
+}
+
+async function loadData() {
+  showLoading(true);
+  try {
+    const goalsRes = await notionQuery(GOALS_DB);
+    const pipelineRes = await notionQuery(PIPELINE_DB);
+
+    const goals = {};
+    for (const page of goalsRes.results) {
+      const month = getProp(page, 'Month') || '';
+      const biz = getProp(page, 'Business') || '';
+      if (!month || biz === 'Combined') continue;
+      const key = `${month}__${biz}`;
+      goals[key] = {
+        actual: getProp(page, 'Gross Revenue Actual ($)') || 0,
+        goal: getProp(page, 'Gross Revenue Goal ($)') || 0,
+        pipeline: getProp(page, 'Pipeline Value ($)') || 0,
+      };
+    }
+
+    notionData = { goals, pipeline: pipelineRes.results };
+    document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    render();
+  } catch(e) {
+    alert('Error: ' + e.message + '\n\nMake sure your token is correct and databases are shared with the integration.');
+  } finally {
+    showLoading(false);
+  }
+}
+
+function render() {
+  const selectedMonth = document.getElementById('month-select').value;
+  const monthLabel = selectedMonth.split(' - ')[1];
+  document.getElementById('hero-month').textContent = monthLabel;
+
+  const syvKey = `${selectedMonth} · SYV__SYVCL`;
+  const sbcKey = `${selectedMonth} · SBC__SBCCL`;
+
+  const syv = notionData.goals?.[syvKey] || { actual: 0, goal: 0, pipeline: 0 };
+  const sbc = notionData.goals?.[sbcKey] || { actual: 0, goal: 0, pipeline: 0 };
+
+  updateMarket('syv', syv);
+  updateMarket('sbc', sbc);
+
+  const combActual = syv.actual + sbc.actual;
+  const combPipeline = syv.pipeline + sbc.pipeline;
+  const combGoal = syv.goal + sbc.goal;
+  const combPath = combActual + combPipeline;
+  const combPathPct = pct(combPath, combGoal);
+  const gap = combGoal - combPath;
+
+  document.getElementById('hero-pct').textContent = combPathPct + '%';
+  document.getElementById('hero-pct').style.color = combPathPct >= 100 ? '#7BC950' : combPathPct >= 75 ? '#F0A44A' : '#E86B6B';
+  document.getElementById('hero-detail').textContent = fmt(combActual) + ' closed · ' + fmt(combPipeline) + ' in pipeline · ' + fmt(combGoal) + ' goal';
+  document.getElementById('hero-gap').textContent = gap > 0 ? fmt(gap) : '✓ On Track';
+  document.getElementById('hero-gap').style.color = gap > 0 ? '#666' : '#7BC950';
+  document.getElementById('hero-gap-sub').textContent = gap > 0 ? 'still needed to reach goal' : 'goal achieved';
+}
+
+function updateMarket(id, data) {
+  const { actual, goal, pipeline } = data;
+  const actualPct = goal > 0 ? Math.min(actual / goal * 100, 100) : 0;
+  const pipelinePct = goal > 0 ? Math.min(pipeline / goal * 100, 100 - actualPct) : 0;
+  const pathPct = pct(actual + pipeline, goal);
+
+  document.getElementById(`${id}-actual`).textContent = fmt(actual);
+  document.getElementById(`${id}-pipeline`).textContent = fmt(pipeline);
+  document.getElementById(`${id}-goal`).textContent = fmt(goal);
+  document.getElementById(`${id}-path-pct`).textContent = `Path to goal: ${pathPct}%`;
+  document.getElementById(`${id}-pct-label`).textContent = `${Math.round(actualPct)}% closed · ${Math.round(pipelinePct)}% projected`;
+
+  document.getElementById(`${id}-green-bar`).style.width = actualPct + '%';
+  document.getElementById(`${id}-grey-bar`).style.left = actualPct + '%';
+  document.getElementById(`${id}-grey-bar`).style.width = pipelinePct + '%';
+
+  const statusEl = document.getElementById(`${id}-status`);
+  if (pathPct >= 100) {
+    statusEl.innerHTML = '<span class="status-pill pill-green">On track to hit goal</span>';
+  } else if (pathPct >= 75) {
+    statusEl.innerHTML = '<span class="status-pill pill-amber">Close — keep pushing</span>';
+  } else {
+    statusEl.innerHTML = '<span class="status-pill pill-red">Needs more pipeline</span>';
+  }
+}
+
+function showLoading(show) {
+  document.getElementById('loading').style.display = show ? 'flex' : 'none';
+}
+
+function saveToken() {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val.startsWith('secret_') && !val.startsWith('ntn_')) {
+    const err = document.getElementById('setup-error');
+    err.textContent = 'Token must start with "ntn_" or "secret_".';
+    err.style.display = 'block';
+    return;
+  }
+  token = val;
+  localStorage.setItem('cl_cc_token_v2', val);
+  document.getElementById('setup').style.display = 'none';
+  document.getElementById('main').style.display = 'flex';
+  const autoMonth = getAutoMonth();
+  const sel = document.getElementById('month-select');
+  for (const opt of sel.options) {
+    if (opt.value === autoMonth) { opt.selected = true; break; }
+  }
+  loadData();
+}
+
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('cl_cc_token_v2');
+  if (saved) {
+    token = saved;
+    document.getElementById('setup').style.display = 'none';
+    document.getElementById('main').style.display = 'flex';
+    const autoMonth = getAutoMonth();
+    const sel = document.getElementById('month-select');
+    for (const opt of sel.options) {
+      if (opt.value === autoMonth) { opt.selected = true; break; }
+    }
+    loadData();
+  }
+});
+</script>
+</body>
+</html>
